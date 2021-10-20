@@ -1,6 +1,8 @@
 # ExWikipedia
 
-**TODO: Add description**
+`ExWikipedia` is an Elixir wrapper to the original Wikipedia [API](https://en.wikipedia.org/w/api.php). 
+Its purpose is to return Wikipedia data in a nicely formatted struct. Currently the package only support 
+searching up via Wikipedia Ids.
 
 ## Installation
 
