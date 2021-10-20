@@ -1,18 +1,11 @@
 defmodule ExWikipedia do
   @moduledoc """
-  Documentation for `ExWikipedia`.
+  `ExWikipedia` is an Elixir wrapper for the Wikipedia [API](https://en.wikipedia.org/w/api.php).
   """
 
-  @doc """
-  Hello world.
+  @callback fetch(input :: integer(), opts :: keyword()) :: {:ok, map()} | {:error, any()}
 
-  ## Examples
-
-      iex> ExWikipedia.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def client do
+    Application.fetch_env!(:ex_wikipedia, :http_client)
   end
 end
