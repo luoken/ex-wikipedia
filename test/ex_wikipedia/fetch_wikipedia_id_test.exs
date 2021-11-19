@@ -1,6 +1,6 @@
 defmodule ExWikipedia.FetchWikipediaIdTest do
   use ExUnit.Case
-  alias ExWikipedia.FetchWikipediaId
+  alias ExWikipedia
 
   import Mox
   setup :verify_on_exit!
@@ -11,7 +11,7 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
         HTTPClientMock
         |> expect(:get, fn _, _ ->
           {:ok,
-           %FetchWikipediaId{
+           %ExWikipedia{
              page_id: 12345,
              title: "pulp fiction",
              content:
@@ -22,14 +22,14 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
         end)
 
       assert {:ok,
-              %FetchWikipediaId{
+              %ExWikipedia{
                 page_id: 12345,
                 title: "pulp fiction",
                 content:
                   "1994 film directed by Quentin Tarantino This article is about the film. For other uses, see  Pulp fiction .",
                 summary: "1994 film directed by Quentin Tarantino",
                 url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
-              }} = FetchWikipediaId.fetch(12345, client: client)
+              }} = ExWikipedia.id(12345, client: client)
     end
 
     test ":error when non 200 status code is returned" do
@@ -39,11 +39,11 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
           {:ok, %HTTPoison.Response{body: "redirected", status_code: 301}}
         end)
 
-      assert {:error, _} = FetchWikipediaId.fetch(12345, client: client)
+      assert {:error, _} = ExWikipedia.id(12345, client: client)
     end
 
     test ":error when non integer id is supplied" do
-      assert {:error, _} = FetchWikipediaId.fetch("blah", [])
+      assert {:error, _} = ExWikipedia.id("blah", [])
     end
 
     test ":ok on string integer ids" do
@@ -51,7 +51,7 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
         HTTPClientMock
         |> expect(:get, fn _, _ ->
           {:ok,
-           %FetchWikipediaId{
+           %ExWikipedia{
              page_id: 12345,
              title: "pulp fiction",
              content:
@@ -62,14 +62,14 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
         end)
 
       assert {:ok,
-              %FetchWikipediaId{
+              %ExWikipedia{
                 page_id: 12345,
                 title: "pulp fiction",
                 content:
                   "1994 film directed by Quentin Tarantino This article is about the film. For other uses, see  Pulp fiction .",
                 summary: "1994 film directed by Quentin Tarantino",
                 url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
-              }} = FetchWikipediaId.fetch("12345", client: client)
+              }} = ExWikipedia.id("12345", client: client)
     end
   end
 end

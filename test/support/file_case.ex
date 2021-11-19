@@ -23,5 +23,4 @@ defmodule ExWikipedia.FileCase do
     |> File.read!()
   end
 
-  # IO.inspect("hello")
 end
