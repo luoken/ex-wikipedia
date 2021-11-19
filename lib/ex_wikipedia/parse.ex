@@ -4,9 +4,7 @@ defmodule ExWikipedia.Parser do
   returning a JSON response with information extracted.
   """
 
-  def default_opts do
-    [html_parser: Floki]
-  end
+
 
   def parse(
         %{
@@ -32,8 +30,8 @@ defmodule ExWikipedia.Parser do
 
   # Images from `images` key are just relative urls. Grabbing absolute urls from body
   defp parse_images(%{*: text}, opts) do
-    opts = Keyword.merge(default_opts(), opts)
-    html_parser = Keyword.get(opts, :html_parser)
+
+    html_parser = Keyword.get(opts, :html_parser, Floki)
 
     {:ok, document} = html_parser.parse_document(text)
 
@@ -43,8 +41,7 @@ defmodule ExWikipedia.Parser do
   end
 
   defp parse_summary(%{*: text}, opts) do
-    opts = Keyword.merge(default_opts(), opts)
-    html_parser = Keyword.get(opts, :html_parser)
+    html_parser = Keyword.get(opts, :html_parser, Floki)
 
     with {:ok, document} <- html_parser.parse_document(text),
          [{_tag, _attr, ast} | _] <- html_parser.filter_out(document, "table"),
@@ -61,8 +58,7 @@ defmodule ExWikipedia.Parser do
   end
 
   defp get_url(%{headhtml: %{*: headhtml}}, opts) do
-    opts = Keyword.merge(default_opts(), opts)
-    html_parser = Keyword.get(opts, :html_parser)
+    html_parser = Keyword.get(opts, :html_parser, Floki)
 
     with {:ok, head} <- html_parser.parse_document(headhtml),
          link_ast <- html_parser.find(head, "link[rel=\"canonical\"]"),
@@ -74,8 +70,7 @@ defmodule ExWikipedia.Parser do
   end
 
   defp parse_content(%{*: text}, opts) do
-    opts = Keyword.merge(default_opts(), opts)
-    html_parser = Keyword.get(opts, :html_parser)
+    html_parser = Keyword.get(opts, :html_parser, Floki)
 
     {:ok, document} = html_parser.parse_document(text)
 
