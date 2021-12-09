@@ -2,56 +2,16 @@ defmodule ExWikipedia do
   @moduledoc """
   `ExWikipedia` is an Elixir wrapper for the Wikipedia [API](https://en.wikipedia.org/w/api.php).
   """
-  alias ExWikipedia.FetchWikipediaId
-
-
+  alias ExWikipedia.FetchPage
 
   @callback fetch(input :: integer(), opts :: keyword()) :: {:ok, map()} | {:error, any()}
-
-
-  @typedoc """
-  - `:external_links` - External links associated with the Wikipedia page.
-  - `:categories` - Categories the Wikipedia page belongs to
-  - `:content` - Contents found on page
-  - `:images` - Images found on the Wikipedia page
-  - `:page_id` - Wikipedia page id represented as an integer
-  - `:revision_id` - Wikipedia page revision id
-  - `:summary` - Wikipedia page's summary
-  - `:title` - title of Wikipedia page
-  - `:url` - url belonging to Wikipedia page
-  """
-  @type t :: %__MODULE__{
-          external_links: [String.t()],
-          categories: [String.t()],
-          content: binary(),
-          images: [String.t()],
-          page_id: integer(),
-          revision_id: integer(),
-          summary: binary(),
-          title: binary(),
-          url: binary()
-        }
-
-  @enforce_keys [:content, :page_id, :summary, :title, :url]
-
-  defstruct external_links: [],
-            categories: [],
-            content: "",
-            images: [],
-            page_id: nil,
-            revision_id: nil,
-            summary: "",
-            title: "",
-            url: ""
-
-
 
   @doc """
   Takes in a Wikipedia ID as an integer or a binary integer and returns a map with key information extracted.
 
   ## Examples
 
-      iex> ExWikipedia.id(54173, [])
+      iex> ExWikipedia.page(54173, [])
       {:ok,
         %ExWikipedia{
           categories: ["Webarchive template wayback links",
@@ -68,8 +28,5 @@ defmodule ExWikipedia do
       }}
   """
 
-  @spec id(wikipedia_id :: integer() | binary(), opts :: list()) :: {:ok, map()} | {:error, binary()}
-  def id(wikipedia_id, opts) do
-    FetchWikipediaId.fetch(wikipedia_id, opts)
-  end
+  defdelegate page(wikipedia_id, opts \\ []), to: FetchPage, as: :fetch
 end
