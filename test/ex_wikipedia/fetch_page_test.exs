@@ -12,7 +12,7 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
         |> expect(:get, fn _, _ ->
           {:ok,
            %ExWikipedia{
-             page_id: 12345,
+             page_id: 12_345,
              title: "pulp fiction",
              content:
                "1994 film directed by Quentin Tarantino This article is about the film. For other uses, see  Pulp fiction .",
@@ -23,13 +23,13 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
 
       assert {:ok,
               %ExWikipedia{
-                page_id: 12345,
+                page_id: 12_345,
                 title: "pulp fiction",
                 content:
                   "1994 film directed by Quentin Tarantino This article is about the film. For other uses, see  Pulp fiction .",
                 summary: "1994 film directed by Quentin Tarantino",
                 url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
-              }} = ExWikipedia.id(12345, client: client)
+              }} = ExWikipedia.id(12_345, client: client)
     end
 
     test ":error when non 200 status code is returned" do
@@ -39,7 +39,7 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
           {:ok, %HTTPoison.Response{body: "redirected", status_code: 301}}
         end)
 
-      assert {:error, _} = ExWikipedia.id(12345, client: client)
+      assert {:error, _} = ExWikipedia.id(12_345, client: client)
     end
 
     test ":error when non integer id is supplied" do
@@ -52,7 +52,7 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
         |> expect(:get, fn _, _ ->
           {:ok,
            %ExWikipedia{
-             page_id: 12345,
+             page_id: 12_345,
              title: "pulp fiction",
              content:
                "1994 film directed by Quentin Tarantino This article is about the film. For other uses, see  Pulp fiction .",
@@ -63,7 +63,7 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
 
       assert {:ok,
               %ExWikipedia{
-                page_id: 12345,
+                page_id: 12_345,
                 title: "pulp fiction",
                 content:
                   "1994 film directed by Quentin Tarantino This article is about the film. For other uses, see  Pulp fiction .",

@@ -1,6 +1,6 @@
 defmodule ExWikipedia.ParserTest do
   use ExWikipedia.FileCase
-  alias ExWikipedia.Parser
+  alias ExWikipedia.PageParser
 
   describe "parse/2" do
     @tag contents: "54173.json"
@@ -31,13 +31,13 @@ defmodule ExWikipedia.ParserTest do
                  "https://upload.wikimedia.org/wikipedia/en/thumb/f/fe/PulpFictionCase.jpg/200px-PulpFictionCase.jpg"
                  | _
                ],
-               page_id: 54173,
+               page_id: 54_173,
                revision_id: 1_048_639_245,
                summary:
                  "1994 film.mw-parser-output .hatnote{font-style:italic}.mw-parser-output div.hatnote{padding-left:1.6em;margin-bottom:0.5em}.mw-parser-output .hatnote i{font-style:normal}.mw-parser-output .hatnote+link+.hatnote{margin-top:-0.5em}",
                title: "Pulp Fiction",
                url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
-             } = Parser.parse(contents, [])
+             } = PageParser.parse(contents, [])
     end
   end
 end

@@ -22,5 +22,4 @@ defmodule ExWikipedia.FileCase do
     "test/support/files/#{filename}"
     |> File.read!()
   end
-
 end
