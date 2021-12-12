@@ -69,7 +69,6 @@ defmodule ExWikipedia.PageParser do
           title: title,
           pageid: page_id,
           revid: revision_id,
-          externallinks: external_links,
           text: text
         } = json,
         opts
@@ -80,7 +79,7 @@ defmodule ExWikipedia.PageParser do
      |> Map.put(:title, title)
      |> Map.put(:page_id, page_id)
      |> Map.put(:revision_id, revision_id)
-     |> Map.put(:external_links, external_links)
+     |> Map.put(:external_links, Map.get(json, :externallinks))
      |> Map.put(:url, get_url(json, opts))
      |> Map.put(:content, parse_content(text, opts))
      |> Map.put(:summary, parse_summary(text, opts))
@@ -107,10 +106,11 @@ defmodule ExWikipedia.PageParser do
 
     with {:ok, document} <- html_parser.parse_document(text),
          [{_tag, _attr, ast} | _] <- html_parser.filter_out(document, "table"),
-         [_first, toc | _rest] <- html_parser.find(ast, "div") do
+         [_first, _second, toc | _rest] <- html_parser.find(ast, "div") do
       toc_index = Enum.find_index(ast, fn x -> x == toc end)
 
       Enum.slice(ast, 0, toc_index)
+      |> html_parser.find("p")
       |> html_parser.filter_out("sup")
       |> html_parser.text()
       |> String.trim()
@@ -150,4 +150,6 @@ defmodule ExWikipedia.PageParser do
   defp parse_categories(%{categories: categories}) do
     Enum.map(categories, fn %{*: keys} -> String.replace(keys, "_", " ") end)
   end
+
+  defp parse_categories(_), do: ""
 end
