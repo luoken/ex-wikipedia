@@ -66,11 +66,14 @@ defmodule ExWikipedia.PageParser do
 
   def parse(
         %{
-          title: title,
-          pageid: page_id,
-          revid: revision_id,
-          text: text
-        } = json,
+          parse:
+            %{
+              title: title,
+              pageid: page_id,
+              revid: revision_id,
+              text: text
+            } = json
+        },
         opts
       ) do
     {:ok,
@@ -134,16 +137,16 @@ defmodule ExWikipedia.PageParser do
   defp parse_content(%{*: text}, opts) do
     html_parser = Keyword.get(opts, :html_parser, Floki)
 
-    {:ok, document} = html_parser.parse_document(text)
-
-    [text | _] =
-      html_parser.find(document, ".mw-parser-output")
-      |> html_parser.filter_out("table")
-      |> html_parser.filter_out("div.toc")
+    with {:ok, document} <- html_parser.parse_document(text),
+         [{_tag, _attr, ast} | _] <- html_parser.filter_out(document, "table") do
+      ast
+      |> html_parser.find("p")
       |> html_parser.filter_out("sup")
-
-    html_parser.text(text, sep: " ")
-    |> String.replace("[ edit ] ", "")
+      |> html_parser.text()
+      |> String.trim()
+    else
+      _ -> ""
+    end
   end
 
   # The categories are inside of the "*" key
