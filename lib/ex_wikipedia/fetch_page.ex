@@ -23,14 +23,11 @@ defmodule ExWikipedia.FetchPage do
 
     decoder = Keyword.get(opts, :decoder, Jason)
 
-    with {:ok, %HTTPoison.Response{body: body, status_code: 200}} <-
+    with {:ok, %{body: body, status_code: 200}} <-
            client.get(build_url(id), opts),
-         {:ok, %{parse: response}} <- decoder.decode(body, keys: :atoms),
+         {:ok, response} <- decoder.decode(body, keys: :atoms),
          {:ok, parsed_response} <- PageParser.parse(response, opts) do
       {:ok, struct(WikipediaPage, parsed_response)}
-    else
-      {:ok, %{error: _} = response} ->
-        PageParser.parse(response)
     end
   end
 

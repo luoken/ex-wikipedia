@@ -1,75 +1,76 @@
 defmodule ExWikipedia.FetchWikipediaIdTest do
-  use ExUnit.Case
-  alias ExWikipedia
+  use ExWikipedia.FileCase
+  alias ExWikipedia.FetchPage
 
   import Mox
   setup :verify_on_exit!
 
   describe "fetch/2" do
-    test ":ok when able to parse response" do
+    @tag contents: "54173.json"
+    test ":ok when able to parse response", %{contents: contents} do
       client =
         HTTPClientMock
         |> expect(:get, fn _, _ ->
           {:ok,
-           %ExWikipedia{
-             page_id: 12_345,
-             title: "pulp fiction",
-             content:
-               "1994 film directed by Quentin Tarantino This article is about the film. For other uses, see  Pulp fiction .",
-             summary: "1994 film directed by Quentin Tarantino",
-             url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
+           %{
+             body: contents,
+             status_code: 200
            }}
         end)
 
       assert {:ok,
-              %ExWikipedia{
-                page_id: 12_345,
-                title: "pulp fiction",
-                content:
-                  "1994 film directed by Quentin Tarantino This article is about the film. For other uses, see  Pulp fiction .",
-                summary: "1994 film directed by Quentin Tarantino",
+              %ExWikipedia.Structs.WikipediaPage{
+                page_id: 54_173,
+                title: "Pulp Fiction",
+                content: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
+                summary: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
                 url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
-              }} = ExWikipedia.id(12_345, client: client)
+              }} = FetchPage.fetch("12345", client: client)
     end
 
-    test ":error when non 200 status code is returned" do
+    @tag contents: "54173.json"
+    test ":ok on string integer ids", %{contents: contents} do
+      # decode the json then reencode it as a string to be passed into the response
+      {:ok, encoded_contents} =
+        Jason.decode!(contents)
+        |> Jason.encode()
+
       client =
         HTTPClientMock
         |> expect(:get, fn _, _ ->
-          {:ok, %HTTPoison.Response{body: "redirected", status_code: 301}}
+          {:ok,
+           %{
+             body: encoded_contents,
+             status_code: 200
+           }}
         end)
 
-      assert {:error, _} = ExWikipedia.id(12_345, client: client)
+      assert {:ok,
+              %ExWikipedia.Structs.WikipediaPage{
+                page_id: 54_173,
+                title: "Pulp Fiction",
+                content: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
+                summary: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
+                url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
+              }} = FetchPage.fetch("12345", client: client)
+    end
+
+    test ":ok when non 200 status code is returned" do
+      client =
+        HTTPClientMock
+        |> expect(:get, fn _, _ ->
+          {:ok, %{body: "redirected", status_code: 301}}
+        end)
+
+      assert {:ok, _} = FetchPage.fetch(12_345, client: client)
     end
 
     test ":error when non integer id is supplied" do
-      assert {:error, _} = ExWikipedia.id("blah", [])
+      assert {:error, _} = FetchPage.fetch("blah", [])
     end
 
-    test ":ok on string integer ids" do
-      client =
-        HTTPClientMock
-        |> expect(:get, fn _, _ ->
-          {:ok,
-           %ExWikipedia{
-             page_id: 12_345,
-             title: "pulp fiction",
-             content:
-               "1994 film directed by Quentin Tarantino This article is about the film. For other uses, see  Pulp fiction .",
-             summary: "1994 film directed by Quentin Tarantino",
-             url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
-           }}
-        end)
-
-      assert {:ok,
-              %ExWikipedia{
-                page_id: 12_345,
-                title: "pulp fiction",
-                content:
-                  "1994 film directed by Quentin Tarantino This article is about the film. For other uses, see  Pulp fiction .",
-                summary: "1994 film directed by Quentin Tarantino",
-                url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
-              }} = ExWikipedia.id("12345", client: client)
+    test ":error when non binary id is supplied" do
+      assert {:error, _} = FetchPage.fetch(%{})
     end
   end
 end
