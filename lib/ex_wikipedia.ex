@@ -13,7 +13,7 @@ defmodule ExWikipedia do
 
       iex> ExWikipedia.page(54173, [])
       {:ok,
-        %ExWikipedia{
+        %ExWikipedia.Structs.WikipediaPage{
           categories: ["Webarchive template wayback links",
           "All articles with dead external links",
           "Articles with dead external links from June 2016" | _],
