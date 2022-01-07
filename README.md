@@ -7,8 +7,9 @@ Currently the package only supports searching up Wikipedia Pages via Wikipedia I
 
 Searching up through `titles` e.g. "Pulp Fiction" or `revision_id` e.g. 1059110452 are not yet supported.
 
-## Usage 
-```
+## Usage
+
+```iex
 iex> ExWikipedia.page(54173)
 #OR
 iex> ExWikipedia.page("54173")
