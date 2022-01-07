@@ -1,8 +1,8 @@
 defmodule ExWikipedia.PageParser do
   @moduledoc """
-  Parses Wikipedia's JSON response.
+  Parses Wikipedia's JSON response for a page.
 
-  The response returned from the Wikipedia API is valid JSON but we still need to sanitize
+  The response returned from the Wikipedia API should be valid JSON but we still need to sanitize
   it before returning to the user. Any HTML tags will get sanitized during this stage.
   """
 
@@ -12,9 +12,9 @@ defmodule ExWikipedia.PageParser do
   Sanitizes the response received from Wikipedia before returning to user. The response returned
   could be either
 
-  options:
+  ## Options:
 
-  -- `:html_parser`: Parser used to parse HTML. Default: Floki
+    - `:html_parser`: Parser used to parse HTML. Default: Floki
 
 
   ## Examples
@@ -71,22 +71,30 @@ defmodule ExWikipedia.PageParser do
               title: title,
               pageid: page_id,
               revid: revision_id,
-              text: text
+              text: text,
+              redirects: redirects
             } = json
         },
         opts
       ) do
-    {:ok,
-     %{}
-     |> Map.put(:categories, parse_categories(json))
-     |> Map.put(:title, title)
-     |> Map.put(:page_id, page_id)
-     |> Map.put(:revision_id, revision_id)
-     |> Map.put(:external_links, Map.get(json, :externallinks))
-     |> Map.put(:url, get_url(json, opts))
-     |> Map.put(:content, parse_content(text, opts))
-     |> Map.put(:summary, parse_summary(text, opts))
-     |> Map.put(:images, parse_images(text, opts))}
+    Keyword.get(opts, :follow_redirect, true)
+    |> case do
+      false when redirects != [] ->
+        {:error, :redirect_found}
+
+      _ ->
+        {:ok,
+         %{}
+         |> Map.put(:categories, parse_categories(json))
+         |> Map.put(:title, title)
+         |> Map.put(:page_id, page_id)
+         |> Map.put(:revision_id, revision_id)
+         |> Map.put(:external_links, Map.get(json, :externallinks))
+         |> Map.put(:url, get_url(json, opts))
+         |> Map.put(:content, parse_content(text, opts))
+         |> Map.put(:summary, parse_summary(text, opts))
+         |> Map.put(:images, parse_images(text, opts))}
+    end
   end
 
   def parse(%{error: %{info: info}}, _opts), do: {:error, info}
@@ -112,14 +120,26 @@ defmodule ExWikipedia.PageParser do
          [_first, _second, toc | _rest] <- html_parser.find(ast, "div") do
       toc_index = Enum.find_index(ast, fn x -> x == toc end)
 
-      Enum.slice(ast, 0, toc_index)
-      |> html_parser.find("p")
-      |> html_parser.filter_out("sup")
-      |> html_parser.text()
-      |> String.trim()
+      case toc_index do
+        nil ->
+          ast
+          |> parse_summary_text(html_parser)
+
+        _ ->
+          Enum.slice(ast, 0, toc_index)
+          |> parse_summary_text(html_parser)
+      end
     else
       _ -> ""
     end
+  end
+
+  defp parse_summary_text(ast, html_parser) do
+    ast
+    |> html_parser.find("p")
+    |> html_parser.filter_out("sup")
+    |> html_parser.text()
+    |> String.trim()
   end
 
   defp get_url(%{headhtml: %{*: headhtml}}, opts) do

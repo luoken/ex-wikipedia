@@ -1,6 +1,6 @@
-defmodule ExWikipedia.FetchWikipediaIdTest do
+defmodule ExWikipedia.Page.PageTest do
   use ExWikipedia.FileCase
-  alias ExWikipedia.FetchPage
+  alias ExWikipedia.Page.Page
 
   import Mox
   setup :verify_on_exit!
@@ -10,7 +10,7 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
     test ":ok when able to parse response", %{contents: contents} do
       client =
         HTTPClientMock
-        |> expect(:get, fn _, _ ->
+        |> expect(:get, fn _, _, _ ->
           {:ok,
            %{
              body: contents,
@@ -19,13 +19,13 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
         end)
 
       assert {:ok,
-              %ExWikipedia.Structs.WikipediaPage{
+              %Page{
                 page_id: 54_173,
                 title: "Pulp Fiction",
                 content: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
                 summary: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
                 url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
-              }} = FetchPage.fetch("12345", client: client)
+              }} = Page.fetch("12345", client: client)
     end
 
     @tag contents: "54173.json"
@@ -37,7 +37,7 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
 
       client =
         HTTPClientMock
-        |> expect(:get, fn _, _ ->
+        |> expect(:get, fn _, _, _ ->
           {:ok,
            %{
              body: encoded_contents,
@@ -46,31 +46,31 @@ defmodule ExWikipedia.FetchWikipediaIdTest do
         end)
 
       assert {:ok,
-              %ExWikipedia.Structs.WikipediaPage{
+              %Page{
                 page_id: 54_173,
                 title: "Pulp Fiction",
                 content: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
                 summary: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
                 url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
-              }} = FetchPage.fetch("12345", client: client)
+              }} = Page.fetch("12345", client: client)
     end
 
     test ":ok when non 200 status code is returned" do
       client =
         HTTPClientMock
-        |> expect(:get, fn _, _ ->
+        |> expect(:get, fn _, _, _ ->
           {:ok, %{body: "redirected", status_code: 301}}
         end)
 
-      assert {:ok, _} = FetchPage.fetch(12_345, client: client)
+      assert {:ok, _} = Page.fetch(12_345, client: client)
     end
 
     test ":error when non integer id is supplied" do
-      assert {:error, _} = FetchPage.fetch("blah", [])
+      assert {:error, _} = Page.fetch("blah", [])
     end
 
     test ":error when non binary id is supplied" do
-      assert {:error, _} = FetchPage.fetch(%{})
+      assert {:error, _} = Page.fetch(%{})
     end
   end
 end
