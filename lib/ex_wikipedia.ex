@@ -2,7 +2,7 @@ defmodule ExWikipedia do
   @moduledoc """
   `ExWikipedia` is an Elixir wrapper for the Wikipedia [API](https://en.wikipedia.org/w/api.php).
   """
-  alias ExWikipedia.FetchPage
+  alias ExWikipedia.Page.Page
 
   @callback fetch(input :: integer(), opts :: keyword()) :: {:ok, map()} | {:error, any()}
 
@@ -27,6 +27,5 @@ defmodule ExWikipedia do
           url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
       }}
   """
-
-  defdelegate page(wikipedia_id, opts \\ []), to: FetchPage, as: :fetch
+  defdelegate page(wikipedia_id, opts \\ []), to: Page, as: :fetch
 end
