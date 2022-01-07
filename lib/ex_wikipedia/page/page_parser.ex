@@ -5,6 +5,7 @@ defmodule ExWikipedia.PageParser do
   The response returned from the Wikipedia API should be valid JSON but we still need to sanitize
   it before returning to the user. Any HTML tags will get sanitized during this stage.
   """
+  @follow_redirect false
 
   @behaviour ExWikipedia.Parser
 
@@ -77,7 +78,7 @@ defmodule ExWikipedia.PageParser do
         },
         opts
       ) do
-    Keyword.get(opts, :follow_redirect, true)
+    Keyword.get(opts, :follow_redirect, @follow_redirect)
     |> case do
       false when redirects != [] ->
         {:error, :redirect_found}
@@ -93,13 +94,18 @@ defmodule ExWikipedia.PageParser do
          |> Map.put(:url, get_url(json, opts))
          |> Map.put(:content, parse_content(text, opts))
          |> Map.put(:summary, parse_summary(text, opts))
-         |> Map.put(:images, parse_images(text, opts))}
+         |> Map.put(:images, parse_images(text, opts))
+         |> Map.put(:is_redirect?, is_redirect?(redirects))}
     end
   end
 
   def parse(%{error: %{info: info}}, _opts), do: {:error, info}
 
   def parse(_, _opts), do: {:error, "Wikipedia response too ambiguous."}
+
+  defp is_redirect?([]), do: false
+
+  defp is_redirect?(_), do: true
 
   # Images from `images` key are just relative urls. Grabbing absolute urls from body
   defp parse_images(%{*: text}, opts) do

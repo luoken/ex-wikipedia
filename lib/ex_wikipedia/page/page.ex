@@ -26,7 +26,8 @@ defmodule ExWikipedia.Page.Page do
           revision_id: integer(),
           summary: binary(),
           title: binary(),
-          url: binary()
+          url: binary(),
+          is_redirect?: boolean()
         }
 
   @enforce_keys [:content, :page_id, :summary, :title, :url]
@@ -39,7 +40,8 @@ defmodule ExWikipedia.Page.Page do
             revision_id: nil,
             summary: "",
             title: "",
-            url: ""
+            url: "",
+            is_redirect?: false
 
   @doc """
   Takes in a Wikipedia integer ID and search for Wikipedia page.
