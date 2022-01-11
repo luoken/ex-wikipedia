@@ -1,6 +1,6 @@
 defmodule ExWikipedia.Page.PageTest do
   use ExWikipedia.FileCase
-  alias ExWikipedia.Page.Page
+  alias ExWikipedia.Page
 
   import Mox
   setup :verify_on_exit!
@@ -29,18 +29,29 @@ defmodule ExWikipedia.Page.PageTest do
     end
 
     @tag contents: "54173.json"
-    test ":ok on string integer ids", %{contents: contents} do
-      # decode the json then reencode it as a string to be passed into the response
-      {:ok, encoded_contents} =
-        Jason.decode!(contents)
-        |> Jason.encode()
-
+    test ":ok when specifying keys used by different HTTP clients", %{contents: contents} do
       client =
         HTTPClientMock
         |> expect(:get, fn _, _, _ ->
           {:ok,
            %{
-             body: encoded_contents,
+             payload: contents,
+             status: 200
+           }}
+        end)
+
+      assert {:ok, %Page{}} =
+               Page.fetch("12345", client: client, body_key: :payload, status_key: :status)
+    end
+
+    @tag contents: "54173.json"
+    test ":ok on string integer ids", %{contents: contents} do
+      client =
+        HTTPClientMock
+        |> expect(:get, fn _, _, _ ->
+          {:ok,
+           %{
+             body: contents,
              status_code: 200
            }}
         end)
@@ -55,14 +66,14 @@ defmodule ExWikipedia.Page.PageTest do
               }} = Page.fetch("12345", client: client)
     end
 
-    test ":ok when non 200 status code is returned" do
+    test ":error when non 200 status code is returned" do
       client =
         HTTPClientMock
         |> expect(:get, fn _, _, _ ->
           {:ok, %{body: "redirected", status_code: 301}}
         end)
 
-      assert {:ok, _} = Page.fetch(12_345, client: client)
+      assert {:error, _} = Page.fetch(12_345, client: client)
     end
 
     test ":error when non integer id is supplied" do

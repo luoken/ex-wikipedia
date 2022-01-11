@@ -1,8 +1,11 @@
-defmodule ExWikipedia.Page.Page do
+defmodule ExWikipedia.Page do
   @moduledoc false
 
   @behaviour ExWikipedia
   @follow_redirect false
+  @default_http_client HTTPoison
+  @default_status_key :status_code
+  @default_body_key :body
 
   alias ExWikipedia.PageParser
 
@@ -16,6 +19,8 @@ defmodule ExWikipedia.Page.Page do
   - `:summary` - String text representing Wikipedia page's summary
   - `:title` - String title of the Wikipedia page
   - `:url` - Fully qualified URL of Wikipedia page
+  - `:is_redirect` - boolean. Indicates whether the content is from a page
+    redirected from the one requested.
   """
 
   @type t :: %__MODULE__{
@@ -45,18 +50,22 @@ defmodule ExWikipedia.Page.Page do
             is_redirect?: false
 
   @doc """
-  Takes in a Wikipedia integer ID and search for Wikipedia page.
+  Fetches a Wikipedia page by its ID.
 
   ## Options
 
-    - `:client`: Client used to fetch Wikipedia page via Wikipedia's integer ID. Default: `HTTPoison`
+    - `:http_client`: HTTP Client used to fetch Wikipedia page via Wikipedia's integer ID. Default: `#{@default_http_client}`
     - `:decoder`: Decoder used to decode JSON returned from Wikipedia API. Default: `Jason`
     - `:http_headers`: HTTP headers that are passed into the client. Default: []
     - `:http_opts`: HTTP options passed to the client. Default: []
+    - `:body_key`: key inside the HTTP client's response which contains the response body.
+      This may change depending on the client used. Default: `#{@default_body_key}`
+    - `:status_key`: key inside the HTTP client's response which returns the HTTP status code.
+      This may change depending on the client used. Default: `#{@default_status_key}`
     - `:parser`: Parser used to parse response returned from client. Default: `ExWikipedia.PageParser`
     - `:parser_opts`: Parser options passed the the parser. Default: []
-    - `:allow_redirect?`: indicates whether or not the content from a redirected
-       page constitutes a valid response. `#{inspect(@follow_redirect)}`
+    - `:follow_redirect`: indicates whether or not the content from a redirected
+       page constitutes a valid response. Default: `#{inspect(@follow_redirect)}`
 
   """
   @impl ExWikipedia
@@ -82,8 +91,11 @@ defmodule ExWikipedia.Page.Page do
       |> Keyword.get(:parser_opts, [])
       |> Keyword.put(:follow_redirect, follow_redirect)
 
-    with {:ok, %{body: body, status_code: 200}} <-
+    # with {:ok, %{body: body, status_code: 200} = raw_response} <-
+    with {:ok, raw_response} <-
            client.get(build_url(id), http_headers, http_opts),
+         :ok <- ok_http_status_code(raw_response, opts),
+         {:ok, body} <- get_body(raw_response, opts),
          {:ok, response} <- decoder.decode(body, keys: :atoms),
          {:ok, parsed_response} <- parser.parse(response, parser_opts) do
       {:ok, struct(__MODULE__, parsed_response)}
@@ -102,6 +114,27 @@ defmodule ExWikipedia.Page.Page do
   end
 
   def fetch(_id, _opts), do: {:error, "The Wikipedia ID supplied is not valid."}
+
+  defp get_body(raw_response, opts) do
+    body_key = Keyword.get(opts, :body_key, @default_body_key)
+
+    case Map.fetch(raw_response, body_key) do
+      :error ->
+        {:error, "#{inspect(body_key)} not found as key in response: #{inspect(raw_response)}"}
+
+      {:ok, body} ->
+        {:ok, body}
+    end
+  end
+
+  defp ok_http_status_code(raw_response, opts) do
+    status_key = Keyword.get(opts, :status_key, @default_status_key)
+
+    case Map.fetch(raw_response, status_key) do
+      {:ok, 200} -> :ok
+      _ -> {:error, "#{inspect(status_key)} not 200 in response: #{inspect(raw_response)}"}
+    end
+  end
 
   defp build_url(page_id) do
     "https://en.wikipedia.org/w/api.php?action=parse&pageid=#{page_id}&format=json&redirects=true&prop=text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"

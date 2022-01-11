@@ -1,18 +1,13 @@
 # ExWikipedia
 
-`ExWikipedia` is a Elixir wrapper to the original Wikipedia [API](https://en.wikipedia.org/w/api.php).
-It bundles the Wikipedia API's response into a struct. 
+`ExWikipedia` is an Elixir client for the [Wikipedia API](https://en.wikipedia.org/w/api.php).
 
-Currently the package only supports searching up Wikipedia Pages via Wikipedia IDs. e.g. `54173`
-
-Searching up `titles` e.g. "Pulp Fiction" or `revision_id` e.g. 1059110452 are not yet supported.
+Currently the package only supports searching for Wikipedia Pages by IDs. e.g. `54173`; searching by title or revision ID is not yet supported.
 
 ## Usage
 
 ```elixir
 iex> ExWikipedia.page(54173)
-#OR
-iex> ExWikipedia.page("54173")
 {:ok,
  %ExWikipedia.Structs.WikipediaPage{
    categories: ["Webarchive template wayback links",
@@ -32,22 +27,22 @@ iex> ExWikipedia.page("54173")
  }}
 ```
 
-When invalid ids are passed in:
+This currently uses `HTTPoison` as its default HTTP client. 
+
+If you wish to use a different HTTP client to drive the requests, e.g. `Tesla`, you can specify it as the `:http_client` option along with any needed customizations for the `:status_key` or `:body_key`.  E.g.
 
 ```elixir
-iex> ExWikipedia.page("pulp fiction")
-{:error, "The Wikipedia ID supplied is not valid."}
-
-iex> ExWikipedia.page(%{title: "pulp fiction"})
-{:error, "The Wikipedia ID supplied is not valid."}
+ iex> ExWikipedia.page(54173, [http_client: Tesla, state_key: :status])
+{:ok,
+ %ExWikipedia.Page{
+   categories: ["Webarchive template wayback links",
+   # ... etc...
+ }
+}
 ```
 
-String titles and other types that are unable to convert to integers are _not_ supported.
+See `ExWikipedia.Page.fetch/2` for more options.
 
-If another HTTP Client is supplied, follow instructions from package to install.
-Supply new `http_client` into `config.exs`
-
-If no HTTP Client is supplied, it will default to `HTTPoison` as a default.
 
 ## Installation
 
