@@ -45,12 +45,7 @@ iex> ExWikipedia.page(%{title: "pulp fiction"})
 String titles and other types that are unable to convert to integers are _not_ supported.
 
 If another HTTP Client is supplied, follow instructions from package to install.
-Supply new `http_client` into `config.exs`: 
-
-```elixir
-config :ex_wikipedia,
-  http_client: Tesla
-```
+Supply new `http_client` into `config.exs`
 
 If no HTTP Client is supplied, it will default to `HTTPoison` as a default.
 
