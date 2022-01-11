@@ -67,7 +67,7 @@ defmodule ExWikipedia.PageParser do
 
   defp do_parse(%{parse: %{redirects: redirects}}, %{follow_redirect: false})
        when length(redirects) > 0 do
-    {:error, "Redirect found when `follow_redirect` is set to false"}
+    {:error, "Content is from a redirected page, but `follow_redirect` is set to false"}
   end
 
   defp do_parse(
