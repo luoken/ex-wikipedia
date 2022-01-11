@@ -2,6 +2,7 @@ defmodule ExWikipedia.Page.Page do
   @moduledoc false
 
   @behaviour ExWikipedia
+  @follow_redirect false
 
   alias ExWikipedia.PageParser
 
@@ -14,7 +15,7 @@ defmodule ExWikipedia.Page.Page do
   - `:revision_id` - Wikipedia page revision id represented as an integer
   - `:summary` - String text representing Wikipedia page's summary
   - `:title` - String title of the Wikipedia page
-  - `:url` - Fully qualified URL belonging to Wikipedia page
+  - `:url` - Fully qualified URL of Wikipedia page
   """
 
   @type t :: %__MODULE__{
@@ -48,12 +49,14 @@ defmodule ExWikipedia.Page.Page do
 
   ## Options
 
-    - `:client`: Client used to fetch Wikipedia page via Wikipedia's integer ID. Default: HTTPoison
-    - `:decoder`: Decoder used to decode JSON returned from Wikipedia API. Default: Jason
+    - `:client`: Client used to fetch Wikipedia page via Wikipedia's integer ID. Default: `HTTPoison`
+    - `:decoder`: Decoder used to decode JSON returned from Wikipedia API. Default: `Jason`
     - `:http_headers`: HTTP headers that are passed into the client. Default: []
     - `:http_opts`: HTTP options passed to the client. Default: []
-    - `:parser`: Parser used to parse response returned from client. Default: ExWikipedia.PageParser
+    - `:parser`: Parser used to parse response returned from client. Default: `ExWikipedia.PageParser`
     - `:parser_opts`: Parser options passed the the parser. Default: []
+    - `:allow_redirect?`: indicates whether or not the content from a redirected
+       page constitutes a valid response. `#{inspect(@follow_redirect)}`
 
   """
   @impl ExWikipedia
@@ -72,7 +75,12 @@ defmodule ExWikipedia.Page.Page do
 
     parser = Keyword.get(opts, :parser, PageParser)
 
-    parser_opts = Keyword.get(opts, :parser_opts, [])
+    follow_redirect = Keyword.get(opts, :follow_redirect, @follow_redirect)
+
+    parser_opts =
+      opts
+      |> Keyword.get(:parser_opts, [])
+      |> Keyword.put(:follow_redirect, follow_redirect)
 
     with {:ok, %{body: body, status_code: 200}} <-
            client.get(build_url(id), http_headers, http_opts),
