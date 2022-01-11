@@ -26,6 +26,12 @@ defmodule ExWikipedia do
           title: "Pulp Fiction",
           url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
       }}
+
+      iex> ExWikipedia.page(1)
+      {:error, "There is no page with ID 1."}
+
+      iex> ExWikipedia.page(%{})
+      {:error, "The Wikipedia ID supplied is not valid."}
   """
   defdelegate page(wikipedia_id, opts \\ []), to: Page, as: :fetch
 end
