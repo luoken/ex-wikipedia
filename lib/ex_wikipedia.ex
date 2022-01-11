@@ -1,13 +1,13 @@
 defmodule ExWikipedia do
   @moduledoc """
-  `ExWikipedia` is an Elixir wrapper for the Wikipedia [API](https://en.wikipedia.org/w/api.php).
+  `ExWikipedia` is an Elixir client for the [Wikipedia API](https://en.wikipedia.org/w/api.php).
   """
-  alias ExWikipedia.Page.Page
+  alias ExWikipedia.Page
 
   @callback fetch(input :: integer(), opts :: keyword()) :: {:ok, map()} | {:error, any()}
 
   @doc """
-  Takes in a Wikipedia ID as an integer or a binary integer and returns a map with key information extracted.
+  Accepts an integer (or a binary representation) and returns a struct with key information extracted.
 
   ## Examples
 
