@@ -5,7 +5,6 @@ defmodule ExWikipedia.PageParser do
   The response returned from the Wikipedia API should be valid JSON but we still need to sanitize
   it before returning to the user. Any HTML tags will get sanitized during this stage.
   """
-  @follow_redirect false
 
   @behaviour ExWikipedia.Parser
 
@@ -15,7 +14,7 @@ defmodule ExWikipedia.PageParser do
 
   ## Options:
 
-    - `:html_parser`: Parser used to parse HTML. Default: Floki
+    - `:html_parser`: Parser used to parse HTML. Default: `Floki`
 
 
   ## Examples
@@ -55,72 +54,72 @@ defmodule ExWikipedia.PageParser do
         url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
       }
 
-      iex> ExWikipedia.page(1)
-      {:error, "There is no page with ID 1."}
-
-      iex> ExWikipedia.page(%{})
-      {:error, "The Wikipedia ID supplied is not valid."}
-
   """
   @impl true
   def parse(json, opts \\ [])
 
-  def parse(
-        %{
-          parse:
-            %{
-              title: title,
-              pageid: page_id,
-              revid: revision_id,
-              text: text,
-              redirects: redirects
-            } = json
-        },
-        opts
-      ) do
-    Keyword.get(opts, :follow_redirect, @follow_redirect)
-    |> case do
-      false when redirects != [] ->
-        {:error, :redirect_found}
-
-      _ ->
-        {:ok,
-         %{}
-         |> Map.put(:categories, parse_categories(json))
-         |> Map.put(:title, title)
-         |> Map.put(:page_id, page_id)
-         |> Map.put(:revision_id, revision_id)
-         |> Map.put(:external_links, Map.get(json, :externallinks))
-         |> Map.put(:url, get_url(json, opts))
-         |> Map.put(:content, parse_content(text, opts))
-         |> Map.put(:summary, parse_summary(text, opts))
-         |> Map.put(:images, parse_images(text, opts))
-         |> Map.put(:is_redirect?, is_redirect?(redirects))}
-    end
-  end
-
   def parse(%{error: %{info: info}}, _opts), do: {:error, info}
 
-  def parse(_, _opts), do: {:error, "Wikipedia response too ambiguous."}
+  def parse(json, opts) when is_list(opts) do
+    defaults = %{follow_redirects: false, html_parser: Floki}
+    do_parse(json, Map.merge(defaults, opts |> Map.new()))
+  end
+
+  defp do_parse(%{parse: %{redirects: redirects}}, %{follow_redirect: false})
+       when length(redirects) > 0 do
+    {:error, "Redirect found when `follow_redirect` is set to false"}
+  end
+
+  defp do_parse(
+         %{
+           parse:
+             %{
+               title: title,
+               pageid: page_id,
+               revid: revision_id,
+               text: text,
+               redirects: redirects
+             } = json
+         },
+         opts
+       ) do
+    {:ok,
+     %{}
+     |> Map.put(:categories, parse_categories(json))
+     |> Map.put(:title, title)
+     |> Map.put(:page_id, page_id)
+     |> Map.put(:revision_id, revision_id)
+     |> Map.put(:external_links, Map.get(json, :externallinks))
+     |> Map.put(:url, get_url(json, opts))
+     |> Map.put(:content, parse_content(text, opts))
+     |> Map.put(:summary, parse_summary(text, opts))
+     |> Map.put(:images, parse_images(text, opts))
+     |> Map.put(:is_redirect?, is_redirect?(redirects))}
+  end
+
+  defp do_parse(_, _opts), do: {:error, "Wikipedia response too ambiguous."}
 
   defp is_redirect?([]), do: false
 
   defp is_redirect?(_), do: true
 
   # Images from `images` key are just relative urls. Grabbing absolute urls from body
-  defp parse_images(%{*: text}, opts) do
-    html_parser = Keyword.get(opts, :html_parser, Floki)
+  defp parse_images(%{*: text}, %{html_parser: html_parser}) do
+    text
+    |> html_parser.parse_document()
+    |> case do
+      {:ok, document} ->
+        document
+        |> html_parser.find("img")
+        |> html_parser.attribute("src")
+        |> Enum.map(fn x -> "https:" <> x end)
 
-    {:ok, document} = html_parser.parse_document(text)
-
-    html_parser.find(document, "img")
-    |> html_parser.attribute("src")
-    |> Enum.map(fn x -> "https:" <> x end)
+      {:error, _} ->
+        []
+    end
   end
 
-  defp parse_summary(%{*: text}, opts) do
-    html_parser = Keyword.get(opts, :html_parser, Floki)
-
+  defp parse_summary(%{*: text}, %{html_parser: html_parser}) do
     with {:ok, document} <- html_parser.parse_document(text),
          [{_tag, _attr, ast} | _] <- html_parser.filter_out(document, "table"),
          [_first, _second, toc | _rest] <- html_parser.find(ast, "div") do
@@ -148,9 +147,7 @@ defmodule ExWikipedia.PageParser do
     |> String.trim()
   end
 
-  defp get_url(%{headhtml: %{*: headhtml}}, opts) do
-    html_parser = Keyword.get(opts, :html_parser, Floki)
-
+  defp get_url(%{headhtml: %{*: headhtml}}, %{html_parser: html_parser}) do
     with {:ok, head} <- html_parser.parse_document(headhtml),
          link_ast <- html_parser.find(head, "link[rel=\"canonical\"]"),
          [url] <- html_parser.attribute(link_ast, "href") do
@@ -160,9 +157,7 @@ defmodule ExWikipedia.PageParser do
     end
   end
 
-  defp parse_content(%{*: text}, opts) do
-    html_parser = Keyword.get(opts, :html_parser, Floki)
-
+  defp parse_content(%{*: text}, %{html_parser: html_parser}) do
     with {:ok, document} <- html_parser.parse_document(text),
          [{_tag, _attr, ast} | _] <- html_parser.filter_out(document, "table") do
       ast
