@@ -7,7 +7,6 @@ defmodule ExWikipedia.PageParserTest do
 
   describe "parse/2" do
     @tag contents: "54173.json"
-
     test "returns map of usable keys", %{contents: contents} do
       decoded_contents = Jason.decode!(contents, keys: :atoms)
 
@@ -37,7 +36,8 @@ defmodule ExWikipedia.PageParserTest do
                 revision_id: 1_059_110_452,
                 summary: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
                 title: "Pulp Fiction",
-                url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
+                url: "https://en.wikipedia.org/wiki/Pulp_Fiction",
+                is_redirect?: false
               }} = PageParser.parse(decoded_contents, [])
     end
 
@@ -53,6 +53,24 @@ defmodule ExWikipedia.PageParserTest do
       }
 
       assert {:error, _} = PageParser.parse(json)
+    end
+
+    @tag contents: "10971271.json"
+    test "returns :error when content represents a redirected page but follow_redirect is false",
+         %{contents: contents} do
+      decoded_contents = Jason.decode!(contents, keys: :atoms)
+
+      assert {:error, _} = PageParser.parse(decoded_contents, follow_redirect: false)
+    end
+
+    @tag contents: "10971271.json"
+    test "returns :ok when content represents a redirected page and follow_redirect is true", %{
+      contents: contents
+    } do
+      decoded_contents = Jason.decode!(contents, keys: :atoms)
+
+      assert {:ok, %{is_redirect?: true}} =
+               PageParser.parse(decoded_contents, follow_redirect: true)
     end
   end
 end
