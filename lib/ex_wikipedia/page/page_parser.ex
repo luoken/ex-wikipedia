@@ -9,8 +9,7 @@ defmodule ExWikipedia.PageParser do
   @behaviour ExWikipedia.Parser
 
   @doc """
-  Sanitizes the response received from Wikipedia before returning to user. The response returned
-  could be either
+  Sanitizes the response received from Wikipedia before returning to user.
 
   ## Options:
 
@@ -20,39 +19,37 @@ defmodule ExWikipedia.PageParser do
   ## Examples
 
       iex> ExWikipedia.PageParser.parse(%{
-        categories: [
-          %{*: "Webarchive_template_wayback_links", hidden: "", sortkey: ""},
-          %{*: "All_articles_with_dead_external_links", hidden: "", sortkey: ""}
-        ],
-        title: "Pulp Fiction",
-        pageid: 54173,
-        revid: 1059110452,
-        externallinks: [
-          "https://www.bbfc.co.uk/releases/pulp-fiction-film-0",
-          "https://web.archive.org/web/20150510235257/http://www.bbfc.co.uk/releases/pulp-fiction-film-0",
-          "https://boxofficemojo.com/movies/?id=pulpfiction.htm" | _],
-        text: %{
-         *: "<div class=\"mw-parser-output\"><div class=\"shortdescription nomobile noexcerpt noprint
-            searchaux\" style=\"display:none\">1994 film</div><style data-mw-deduplicate=\"
-            TemplateStyles:r1033289096\">.mw-parser-output .hatnote{font-style:italic}.mw-parser-output
-            div.hatnote{padding-left:1.6em;margin-bottom:0.5em}..."}
-        })
-      %{
-        categories: [
-          "Webarchive template wayback links",
-          "All articles with dead external links",
-          "Articles with dead external links from June 2016" | _
-        ],
-        content: "1994 film This article is about the film. For other uses, see  Pulp fiction .
-        Pulp Fiction  is a 1994 American  black comedy crime  film written and directed
-        by  Quentin Tarantino , who conceived it with  Roger Avary .  Starring  John Travolta ,
-        Samuel L. Jackson ,  Bruce Willis ,  Tim Roth ...",
-        page_id: 54173,
-        revision_id: 1059110452,
-        summary: "1994 film...",
-        title: "Pulp Fiction",
-        url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
-      }
+        parse: %{
+          categories: [
+            %{*: "Webarchive_template_wayback_links", hidden: "", sortkey: ""},
+          ],
+          headhtml: %{*: "headhtml in here"},
+          images: ["Semi-protection-shackle.svg", "End_of_Ezekiel.ogg"],
+          links: [
+            %{*: "Pulp fiction (disambiguation)", exists: "", ns: 0}
+          ],
+          pageid: 54173,
+          redirects: [],
+          revid: 1063115250,
+          text: %{
+            *: "text in here"
+          },
+          title: "Pulp Fiction"
+        }
+      })
+      {:ok,
+       %{
+         categories: ["Webarchive template wayback links"],
+         content: "",
+         external_links: nil,
+         images: [],
+         is_redirect?: false,
+         page_id: 54173,
+         revision_id: 1063115250,
+         summary: "",
+         title: "Pulp Fiction",
+         url: ""
+       }}
 
   """
   @impl true
@@ -157,6 +154,8 @@ defmodule ExWikipedia.PageParser do
     end
   end
 
+  defp get_url(_, _), do: ""
+
   defp parse_content(%{*: text}, %{html_parser: html_parser}) do
     with {:ok, document} <- html_parser.parse_document(text),
          [{_tag, _attr, ast} | _] <- html_parser.filter_out(document, "table") do
@@ -175,5 +174,5 @@ defmodule ExWikipedia.PageParser do
     Enum.map(categories, fn %{*: keys} -> String.replace(keys, "_", " ") end)
   end
 
-  defp parse_categories(_), do: ""
+  defp parse_categories(_), do: []
 end

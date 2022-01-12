@@ -72,5 +72,29 @@ defmodule ExWikipedia.PageParserTest do
       assert {:ok, %{is_redirect?: true}} =
                PageParser.parse(decoded_contents, follow_redirect: true)
     end
+
+    test ":ok when categories is not present" do
+      parse = %{
+        parse: %{
+          pageid: 54_173,
+          redirects: [],
+          revid: 1_063_115_250,
+          text: %{
+            *: "text in here"
+          },
+          title: "Pulp Fiction"
+        }
+      }
+
+      assert {:ok,
+              %{
+                categories: [],
+                content: "",
+                title: "Pulp Fiction",
+                external_links: nil,
+                images: [],
+                is_redirect?: false
+              }} = PageParser.parse(parse)
+    end
   end
 end
