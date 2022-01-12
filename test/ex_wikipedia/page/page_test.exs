@@ -83,5 +83,19 @@ defmodule ExWikipedia.Page.PageTest do
     test ":error when non binary id is supplied" do
       assert {:error, _} = Page.fetch(%{})
     end
+
+    test ":error when unable to find body key" do
+      client =
+        HTTPClientMock
+        |> expect(:get, fn _, _, _ ->
+          {:ok,
+           %{
+             body: "contents",
+             status_code: 200
+           }}
+        end)
+
+      assert {:error, _} = Page.fetch(12_345, client: client, body_key: :payload)
+    end
   end
 end
