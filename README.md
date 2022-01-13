@@ -9,7 +9,7 @@ Currently the package only supports searching for Wikipedia Pages by IDs. e.g. `
 ```elixir
 iex> ExWikipedia.page(54173)
 {:ok,
- %ExWikipedia.Structs.WikipediaPage{
+ %ExWikipedia.Page{
    categories: ["Webarchive template wayback links",
     "All articles with dead external links",
     "Articles with dead external links from June 2016", ...],
@@ -27,12 +27,12 @@ iex> ExWikipedia.page(54173)
  }}
 ```
 
-This currently uses `HTTPoison` as its default HTTP client. 
+This currently uses `HTTPoison` as its default HTTP client.
 
 If you wish to use a different HTTP client to drive the requests, e.g. `Tesla`, you can specify it as the `:http_client` option along with any needed customizations for the `:status_key` or `:body_key`.  E.g.
 
 ```elixir
- iex> ExWikipedia.page(54173, [http_client: Tesla, state_key: :status])
+ iex> ExWikipedia.page(54173, [http_client: Tesla, status_key: :status])
 {:ok,
  %ExWikipedia.Page{
    categories: ["Webarchive template wayback links",
@@ -42,7 +42,6 @@ If you wish to use a different HTTP client to drive the requests, e.g. `Tesla`, 
 ```
 
 See `ExWikipedia.Page.fetch/2` for more options.
-
 
 ## Installation
 
