@@ -33,6 +33,24 @@ defmodule ExWikipedia do
 
       iex> ExWikipedia.page(%{})
       {:error, "The Wikipedia ID supplied is not valid."}
+
+  Redirects are allowed by default. Compare the following two results.
+
+      iex> ExWikipedia.page(10971271)
+      {:ok,
+      %ExWikipedia.Page{
+        # ...
+        is_redirect?: true,
+        page_id: 10971271,
+        title: "Irene Angelico",
+        url: "https://en.wikipedia.org/wiki/Irene_Angelico"
+      }}
+
+      iex> ExWikipedia.page(10971271, follow_redirect: false)
+      {:error,
+      "Content is from a redirected page, but `follow_redirect` is set to false"}
+
+  See `ExWikipedia.Page` for full implementation details.
   """
   defdelegate page(wikipedia_id, opts \\ []), to: Page, as: :fetch
 end
