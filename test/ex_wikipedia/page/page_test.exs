@@ -1,5 +1,5 @@
 defmodule ExWikipedia.Page.PageTest do
-  use ExWikipedia.FileCase
+  use ExWikipedia.FileCase, async: true
   alias ExWikipedia.Page
 
   import Mox
