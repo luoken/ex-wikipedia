@@ -63,7 +63,7 @@ defmodule ExWikipedia.PageParser do
   def parse(%{error: %{info: info}}, _opts), do: {:error, info}
 
   def parse(json, opts) when is_list(opts) do
-    defaults = %{follow_redirects: @follow_redirects, html_parser: @default_html_parser}
+    defaults = %{follow_redirect: @follow_redirect, html_parser: @default_html_parser}
     do_parse(json, Map.merge(defaults, opts |> Map.new()))
   end
 
