@@ -2,7 +2,8 @@ defmodule ExWikipedia.Page do
   @moduledoc false
 
   @behaviour ExWikipedia
-  @follow_redirect false
+
+  @follow_redirect true
   @default_http_client HTTPoison
   @default_json_parser Jason
   @default_status_key :status_code
