@@ -9,6 +9,7 @@ defmodule ExWikipedia.PageParser do
   @behaviour ExWikipedia.Parser
 
   @default_html_parser Floki
+  @follow_redirect true
 
   @doc """
   Sanitizes the response received from Wikipedia before returning to user.
@@ -16,6 +17,8 @@ defmodule ExWikipedia.PageParser do
   ## Options:
 
     - `:html_parser`: Parser used to parse HTML. Default: `#{@default_html_parser}`
+    - `:follow_redirect`: indicates whether or not the content from a redirected
+       page constitutes a valid response. Default: `#{@follow_redirect}`
 
 
   ## Examples
@@ -60,7 +63,7 @@ defmodule ExWikipedia.PageParser do
   def parse(%{error: %{info: info}}, _opts), do: {:error, info}
 
   def parse(json, opts) when is_list(opts) do
-    defaults = %{follow_redirects: false, html_parser: @default_html_parser}
+    defaults = %{follow_redirect: @follow_redirect, html_parser: @default_html_parser}
     do_parse(json, Map.merge(defaults, opts |> Map.new()))
   end
 
