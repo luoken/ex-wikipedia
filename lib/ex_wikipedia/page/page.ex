@@ -1,5 +1,8 @@
 defmodule ExWikipedia.Page do
-  @moduledoc false
+  @moduledoc """
+  `ExWikipedia.page/2` delegates here. This module represents the current
+  implementation.
+  """
 
   @behaviour ExWikipedia
 
@@ -65,7 +68,8 @@ defmodule ExWikipedia.Page do
     - `:status_key`: key inside the HTTP client's response which returns the HTTP status code.
       This may change depending on the client used. Default: `#{@default_status_key}`
     - `:parser`: Parser used to parse response returned from client. Default: `ExWikipedia.PageParser`
-    - `:parser_opts`: Parser options passed the the parser. Default: []
+    - `:parser_opts`: Parser options passed the the parser. Default: `[]`.
+      See `ExWikipedia.PageParser` for supported option.
     - `:follow_redirect`: indicates whether or not the content from a redirected
        page constitutes a valid response. Default: `#{inspect(@follow_redirect)}`
 

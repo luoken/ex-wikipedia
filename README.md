@@ -27,6 +27,8 @@ iex> ExWikipedia.page(54173)
  }}
 ```
 
+## Defaults
+
 This currently uses `HTTPoison` as its default HTTP client.
 
 If you wish to use a different HTTP client to drive the requests, e.g. `Tesla`, you can specify it as the `:http_client` option along with any needed customizations for the `:status_key` or `:body_key`.  E.g.
@@ -41,7 +43,10 @@ If you wish to use a different HTTP client to drive the requests, e.g. `Tesla`, 
 }
 ```
 
-See `ExWikipedia.Page.fetch/2` for more options.
+`Jason` is the default JSON encoder (customize this via the `:decoder` option).
+`Floki` is the default HTML parser used by the page parser. See `ExWikipedia.PageParser` for its use.
+
+See `ExWikipedia.Page.fetch/2` for full implementation details.
 
 ## Installation
 

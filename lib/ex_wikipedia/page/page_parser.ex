@@ -12,7 +12,8 @@ defmodule ExWikipedia.PageParser do
   @follow_redirect true
 
   @doc """
-  Sanitizes the response received from Wikipedia before returning to user.
+  This parses a map and HTML contained in it, sanitizes it, and returns a map suitable to be marshalled into
+  a struct. The response should be JSON decoded prior to this parsing.
 
   ## Options:
 
