@@ -15,18 +15,23 @@ defmodule ExWikipedia do
       {:ok,
         %ExWikipedia.Page{
           categories: ["Webarchive template wayback links",
-          "All articles with dead external links",
-          "Articles with dead external links from June 2016" | _],
-          content: "1994 film directed by Quentin Tarantino This article is about the film. For other uses, see" <> _,
-          external_links: ["https://www.bbfc.co.uk/releases/pulp-fiction-film-0", | _],
-          images: ["https://upload.wikimedia.org/wikipedia/en/3/3b/Pulp_Fiction_%281994%29_poster.jpg", | _ ],
+            "All articles with dead external links",
+            "Films whose writer won the Best Original Screenplay BAFTA Award",
+            "Independent Spirit Award for Best Film winners", ...],
+          content: "Pulp Fiction is a 1994 American black comedycrime film" <> ...,
+          external_links: ["https://www.bbfc.co.uk/releases/pulp-fiction-film-0",
+            "https://boxofficemojo.com/movies/?id=pulpfiction.htm",
+            ...],
+          images: ["https://upload.wikimedia.org/wikipedia/en/3/3b/Pulp_Fiction_%281994%29_poster.jpg",
+            "https://upload.wikimedia.org/wikipedia/en/thumb/2/2e/Willis_in_Pulp_Fiction.jpg/220px-Willis_in_Pulp_Fiction.jpg",
+            ...],
           is_redirect?: false,
           page_id: 54173,
-          revision_id: 1043869264,
-          summary: "1994 film directed by Quentin Tarantino.mw-parser-output .hatnote{font-style:italic}.mw-parser-output" <> _,
+          revision_id: 1069204423,
+          summary: "Pulp Fiction is a 1994 American black comedycrime film written" <> ...,
           title: "Pulp Fiction",
           url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
-      }}
+        }}
 
       iex> ExWikipedia.page(1)
       {:error, "There is no page with ID 1."}
@@ -49,6 +54,8 @@ defmodule ExWikipedia do
       iex> ExWikipedia.page(10971271, follow_redirect: false)
       {:error,
       "Content is from a redirected page, but `follow_redirect` is set to false"}
+
+  ## Options
 
   See `ExWikipedia.Page` for full implementation details.
   """

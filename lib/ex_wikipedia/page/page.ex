@@ -27,7 +27,6 @@ defmodule ExWikipedia.Page do
   - `:is_redirect?` - Boolean. Indicates whether the content is from a page
     redirected from the one requested.
   """
-
   @type t :: %__MODULE__{
           external_links: [String.t()],
           categories: [String.t()],
