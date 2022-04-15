@@ -5,7 +5,7 @@ defmodule ExWikipedia.MixProject do
     [
       app: :ex_wikipedia,
       version: "0.1.0",
-      elixir: "~> 1.13.0",
+      elixir: "~> 1.13.4",
       package: package(),
       description: "Elixir wrapper for Wikipedia's API.",
       start_permanent: Mix.env() == :prod,
@@ -32,13 +32,13 @@ defmodule ExWikipedia.MixProject do
 
   defp deps do
     [
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.24", only: :dev, runtime: false},
+      {:excoveralls, "~> 0.14.3", only: :test},
+      {:floki, "~> 0.32.1", only: [:dev, :test], optional: true},
       {:httpoison, "~> 1.8", optional: true},
       {:jason, "~> 1.2", optional: true},
-      {:floki, "~> 0.31.0", only: [:dev, :test], optional: true},
-      {:mox, "~> 1.0.0", only: [:test]},
-      {:excoveralls, "~> 0.14.3", only: :test},
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false}
+      {:mox, "~> 1.0.0", only: [:test]}
     ]
   end
 
