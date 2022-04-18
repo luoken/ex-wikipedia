@@ -96,5 +96,17 @@ defmodule ExWikipedia.PageParserTest do
                 is_redirect?: false
               }} = PageParser.parse(parse)
     end
+
+    @tag contents: "605939.json"
+    test "retains spaces between links", %{contents: contents} do
+      decoded_contents = Jason.decode!(contents, keys: :atoms)
+
+      assert {:ok,
+              %{
+                content:
+                  "Akira (Japanese: アキラ) is a 1988 Japanese animated cyberpunk action film directed by Katsuhiro Otomo, produced by Ryōhei Suzuki and Shunzō Katō, and written by Otomo and Izo Hashimoto, based on Otomo's 1982 manga of the same name. The film had a production budget of ¥700 million ($5.5 million)," <>
+                    _
+              }} = PageParser.parse(decoded_contents)
+    end
   end
 end
