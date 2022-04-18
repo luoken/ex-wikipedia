@@ -17,7 +17,7 @@ defmodule ExWikipedia.PageParserTest do
                   "All articles with dead external links",
                   "Articles with dead external links from June 2016" | _
                 ],
-                content: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
+                content: "Pulp Fiction is a 1994 American black comedy crime film" <> _,
                 external_links: [
                   "https://www.bbfc.co.uk/releases/pulp-fiction-film-0",
                   "https://web.archive.org/web/20150510235257/http://www.bbfc.co.uk/releases/pulp-fiction-film-0",
@@ -34,7 +34,7 @@ defmodule ExWikipedia.PageParserTest do
                 ],
                 page_id: 54_173,
                 revision_id: 1_059_110_452,
-                summary: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
+                summary: "Pulp Fiction is a 1994 American black comedy crime film" <> _,
                 title: "Pulp Fiction",
                 url: "https://en.wikipedia.org/wiki/Pulp_Fiction",
                 is_redirect?: false
@@ -104,7 +104,10 @@ defmodule ExWikipedia.PageParserTest do
       assert {:ok,
               %{
                 content:
-                  "Akira (Japanese: アキラ) is a 1988 Japanese animated cyberpunk action film directed by Katsuhiro Otomo, produced by Ryōhei Suzuki and Shunzō Katō, and written by Otomo and Izo Hashimoto, based on Otomo's 1982 manga of the same name. The film had a production budget of ¥700 million ($5.5 million)," <>
+                  "Akira (Japanese: アキラ) is a 1988 Japanese animated cyberpunk action film directed by Katsuhiro Otomo, produced by Ryōhei Suzuki and Shunzō Katō, and written by Otomo and Izo Hashimoto, based on Otomo's 1982 manga of the same name. The film had a production budget of ¥700 million ($5.5 million), with its combined production and advertising budget reaching ¥1.1 billion ($9 million), making it the most expensive anime film up until then.\nSet in a dystopian 2019, Akira tells the story of Shōtarō Kaneda, a leader of a  biker gang whose childhood friend, Tetsuo Shima, acquires incredible telekinetic abilities after a motorcycle accident, eventually threatening an entire military complex amid chaos and rebellion in the sprawling futuristic metropolis of Neo-Tokyo. While most of the character designs and settings were adapted from the manga, the plot differs considerably and does not include much of the last half of the manga, which continued publication for two years after the film's release. The soundtrack, which draws heavily from traditional Indonesian gamelan as well as Japanese noh music, was composed by Shōji Yamashiro and performed by Geinoh Yamashirogumi.\nAkira premiered in Japan on July 16, 1988, where it was distributed by Toho; it was released the following year in the United States by Streamline Pictures." <>
+                    _,
+                summary:
+                  "Akira (Japanese: アキラ) is a 1988 Japanese animated cyberpunk action film directed by Katsuhiro Otomo, produced by Ryōhei Suzuki and Shunzō Katō, and written by Otomo and Izo Hashimoto, based on Otomo's 1982 manga of the same name. The film had a production budget of ¥700 million ($5.5 million), with its combined production and advertising budget reaching ¥1.1 billion ($9 million), making it the most expensive anime film up until then.\nSet in a dystopian 2019, Akira tells the story of Shōtarō Kaneda, a leader of a  biker gang whose childhood friend, Tetsuo Shima, acquires incredible telekinetic abilities after a motorcycle accident, eventually threatening an entire military complex amid chaos and rebellion in the sprawling futuristic metropolis of Neo-Tokyo. While most of the character designs and settings were adapted from the manga, the plot differs considerably and does not include much of the last half of the manga, which continued publication for two years after the film's release. The soundtrack, which draws heavily from traditional Indonesian gamelan as well as Japanese noh music, was composed by Shōji Yamashiro and performed by Geinoh Yamashirogumi.\nAkira premiered in Japan on July 16, 1988, where it was distributed by Toho; it was released the following year in the United States by Streamline Pictures. It garnered an" <>
                     _
               }} = PageParser.parse(decoded_contents)
     end
