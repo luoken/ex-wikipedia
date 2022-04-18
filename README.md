@@ -21,7 +21,7 @@ iex> ExWikipedia.page(54173)
     "https://upload.wikimedia.org/wikipedia/en/thumb/2/2e/Willis_in_Pulp_Fiction.jpg/", ...],
    page_id: 54173,
    revision_id: 1059110452,
-   summary: "Pulp Fiction is a 1994 American black comedycrime film written and directed by Quentin Tarantino, who conceived it with Roger Avary. Starring John Travolta, Samuel L. Jackson," <> ...,
+   summary: "Pulp Fiction is a 1994 American black comedy crime film written and directed by Quentin Tarantino, who conceived it with Roger Avary. Starring John Travolta, Samuel L. Jackson," <> ...,
    title: "Pulp Fiction",
    url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
  }}
