@@ -18,7 +18,7 @@ defmodule ExWikipedia do
             "All articles with dead external links",
             "Films whose writer won the Best Original Screenplay BAFTA Award",
             "Independent Spirit Award for Best Film winners", ...],
-          content: "Pulp Fiction is a 1994 American black comedycrime film" <> ...,
+          content: "Pulp Fiction is a 1994 American black comedy crime film" <> ...,
           external_links: ["https://www.bbfc.co.uk/releases/pulp-fiction-film-0",
             "https://boxofficemojo.com/movies/?id=pulpfiction.htm",
             ...],
@@ -28,7 +28,7 @@ defmodule ExWikipedia do
           is_redirect?: false,
           page_id: 54173,
           revision_id: 1069204423,
-          summary: "Pulp Fiction is a 1994 American black comedycrime film written" <> ...,
+          summary: "Pulp Fiction is a 1994 American black comedy crime film written" <> ...,
           title: "Pulp Fiction",
           url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
         }}

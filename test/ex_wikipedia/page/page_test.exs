@@ -22,8 +22,8 @@ defmodule ExWikipedia.Page.PageTest do
               %Page{
                 page_id: 54_173,
                 title: "Pulp Fiction",
-                content: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
-                summary: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
+                content: "Pulp Fiction is a 1994 American black comedy crime film" <> _,
+                summary: "Pulp Fiction is a 1994 American black comedy crime film" <> _,
                 url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
               }} = Page.fetch("12345", http_client: http_client)
     end
@@ -64,8 +64,8 @@ defmodule ExWikipedia.Page.PageTest do
               %Page{
                 page_id: 54_173,
                 title: "Pulp Fiction",
-                content: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
-                summary: "Pulp Fiction is a 1994 American black comedycrime film" <> _,
+                content: "Pulp Fiction is a 1994 American black comedy crime film" <> _,
+                summary: "Pulp Fiction is a 1994 American black comedy crime film" <> _,
                 url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
               }} = Page.fetch("12345", http_client: http_client)
     end
