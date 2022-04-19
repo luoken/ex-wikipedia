@@ -144,24 +144,42 @@ defmodule ExWikipedia.PageParser do
     end
   end
 
-  defp parse_content(%{*: text}, %{html_parser: html_parser}) do
-    text = text |> String.replace(~r/>[ \n\r]+</, ">&#32;<")
-
-    with {:ok, document} <- html_parser.parse_document(text),
-         [{_tag, _attr, ast} | _] <- html_parser.filter_out(document, "table") do
-      ast
-      |> parse_text(html_parser)
-    else
-      _ -> ""
-    end
-  end
-
   defp parse_text(ast, html_parser) do
     ast
     |> html_parser.find("p")
     |> html_parser.filter_out("sup")
     |> html_parser.text()
     |> String.trim()
+  end
+
+  defp parse_content(%{*: text}, %{html_parser: html_parser}) do
+    text = text |> String.replace(~r/>[ \n\r]+</, ">&#32;<")
+
+    with {:ok, document} <- html_parser.parse_document(text),
+         [{_tag, _attr, ast} | _] <- html_parser.filter_out(document, "table") do
+      ast
+      |> html_parser.filter_out("div.shortdescription")
+      |> html_parser.filter_out("style")
+      |> html_parser.filter_out("sup")
+      |> html_parser.filter_out("div.navigation-not-searchable")
+      |> html_parser.filter_out("div.toc")
+      |> html_parser.filter_out(".thumb")
+      |> html_parser.filter_out("span.mw-editsection")
+      |> html_parser.traverse_and_update(fn
+        {"h2", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
+          {"h2", [], [{"span", [{"class", "mw-headline"}, id], ["== #{text} =="]}]}
+
+        {"h3", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
+          {"h3", [], [{"span", [{"class", "mw-headline"}, id], ["=== #{text} ==="]}]}
+
+        other ->
+          other
+      end)
+      |> html_parser.text()
+      |> String.trim()
+    else
+      _ -> ""
+    end
   end
 
   defp get_url(%{headhtml: %{*: headhtml}}, %{html_parser: html_parser}) do
