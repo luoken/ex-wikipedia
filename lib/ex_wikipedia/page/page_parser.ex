@@ -97,7 +97,8 @@ defmodule ExWikipedia.PageParser do
      |> Map.put(:content, parse_content(text, opts))
      |> Map.put(:summary, parse_summary(text, opts))
      |> Map.put(:images, parse_images(text, opts))
-     |> Map.put(:is_redirect?, is_redirect?(redirects))}
+     |> Map.put(:is_redirect?, is_redirect?(redirects))
+     |> Map.put(:links, parse_links(json))}
   end
 
   defp do_parse(_, _opts), do: {:error, "Wikipedia response too ambiguous."}
@@ -116,6 +117,7 @@ defmodule ExWikipedia.PageParser do
         |> html_parser.find("img")
         |> html_parser.attribute("src")
         |> Enum.map(fn x -> "https:" <> x end)
+        |> Enum.uniq()
 
       {:error, _} ->
         []
@@ -172,6 +174,12 @@ defmodule ExWikipedia.PageParser do
         {"h3", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
           {"h3", [], [{"span", [{"class", "mw-headline"}, id], ["=== #{text} ==="]}]}
 
+        {"h4", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
+          {"h4", [], [{"span", [{"class", "mw-headline"}, id], ["==== #{text} ===="]}]}
+
+        {"h4", [], [_, {"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
+          {"h4", [], [{"span", [{"class", "mw-headline"}, id], ["==== #{text} ===="]}]}
+
         other ->
           other
       end)
@@ -197,7 +205,15 @@ defmodule ExWikipedia.PageParser do
   # The categories are inside of the "*" key
   defp parse_categories(%{categories: categories}) do
     Enum.map(categories, fn %{*: keys} -> String.replace(keys, "_", " ") end)
+    |> Enum.sort()
   end
 
   defp parse_categories(_), do: []
+
+  defp parse_links(%{links: links}) do
+    Enum.map(links, fn %{*: keys} -> keys end)
+    |> Enum.sort()
+  end
+
+  defp parse_links(_), do: []
 end

@@ -37,7 +37,8 @@ defmodule ExWikipedia.Page do
           summary: binary(),
           title: binary(),
           url: binary(),
-          is_redirect?: boolean()
+          is_redirect?: boolean(),
+          links: [String.t()]
         }
 
   @enforce_keys [:content, :page_id, :summary, :title, :url]
@@ -51,7 +52,8 @@ defmodule ExWikipedia.Page do
             summary: "",
             title: "",
             url: "",
-            is_redirect?: false
+            is_redirect?: false,
+            links: []
 
   @doc """
   Fetches a Wikipedia page by its ID.
