@@ -13,9 +13,10 @@ defmodule ExWikipedia.PageParserTest do
       assert {:ok,
               %{
                 categories: [
-                  "Webarchive template wayback links",
-                  "All articles with dead external links",
-                  "Articles with dead external links from June 2016" | _
+                  "1990s black comedy films",
+                  "1990s crime comedy-drama films",
+                  "1994 comedy films"
+                  | _
                 ],
                 content: "Pulp Fiction is a 1994 American black comedy crime film" <> _,
                 external_links: [

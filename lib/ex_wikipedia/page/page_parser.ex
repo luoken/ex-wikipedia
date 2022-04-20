@@ -97,7 +97,8 @@ defmodule ExWikipedia.PageParser do
      |> Map.put(:content, parse_content(text, opts))
      |> Map.put(:summary, parse_summary(text, opts))
      |> Map.put(:images, parse_images(text, opts))
-     |> Map.put(:is_redirect?, is_redirect?(redirects))}
+     |> Map.put(:is_redirect?, is_redirect?(redirects))
+     |> Map.put(:links, parse_links(json))}
   end
 
   defp do_parse(_, _opts), do: {:error, "Wikipedia response too ambiguous."}
@@ -116,6 +117,7 @@ defmodule ExWikipedia.PageParser do
         |> html_parser.find("img")
         |> html_parser.attribute("src")
         |> Enum.map(fn x -> "https:" <> x end)
+        |> Enum.uniq()
 
       {:error, _} ->
         []
@@ -144,24 +146,48 @@ defmodule ExWikipedia.PageParser do
     end
   end
 
-  defp parse_content(%{*: text}, %{html_parser: html_parser}) do
-    text = text |> String.replace(~r/>[ \n\r]+</, ">&#32;<")
-
-    with {:ok, document} <- html_parser.parse_document(text),
-         [{_tag, _attr, ast} | _] <- html_parser.filter_out(document, "table") do
-      ast
-      |> parse_text(html_parser)
-    else
-      _ -> ""
-    end
-  end
-
   defp parse_text(ast, html_parser) do
     ast
     |> html_parser.find("p")
     |> html_parser.filter_out("sup")
     |> html_parser.text()
     |> String.trim()
+  end
+
+  defp parse_content(%{*: text}, %{html_parser: html_parser}) do
+    text = text |> String.replace(~r/>[ \n\r]+</, ">&#32;<")
+
+    with {:ok, document} <- html_parser.parse_document(text),
+         [{_tag, _attr, ast} | _] <- html_parser.filter_out(document, "table") do
+      ast
+      |> html_parser.filter_out("div.shortdescription")
+      |> html_parser.filter_out("style")
+      |> html_parser.filter_out("sup")
+      |> html_parser.filter_out("div.navigation-not-searchable")
+      |> html_parser.filter_out("div.toc")
+      |> html_parser.filter_out(".thumb")
+      |> html_parser.filter_out("span.mw-editsection")
+      |> html_parser.traverse_and_update(fn
+        {"h2", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
+          {"h2", [], [{"span", [{"class", "mw-headline"}, id], ["== #{text} =="]}]}
+
+        {"h3", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
+          {"h3", [], [{"span", [{"class", "mw-headline"}, id], ["=== #{text} ==="]}]}
+
+        {"h4", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
+          {"h4", [], [{"span", [{"class", "mw-headline"}, id], ["==== #{text} ===="]}]}
+
+        {"h4", [], [_, {"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
+          {"h4", [], [{"span", [{"class", "mw-headline"}, id], ["==== #{text} ===="]}]}
+
+        other ->
+          other
+      end)
+      |> html_parser.text()
+      |> String.trim()
+    else
+      _ -> ""
+    end
   end
 
   defp get_url(%{headhtml: %{*: headhtml}}, %{html_parser: html_parser}) do
@@ -179,7 +205,15 @@ defmodule ExWikipedia.PageParser do
   # The categories are inside of the "*" key
   defp parse_categories(%{categories: categories}) do
     Enum.map(categories, fn %{*: keys} -> String.replace(keys, "_", " ") end)
+    |> Enum.sort()
   end
 
   defp parse_categories(_), do: []
+
+  defp parse_links(%{links: links}) do
+    Enum.map(links, fn %{*: keys} -> keys end)
+    |> Enum.sort()
+  end
+
+  defp parse_links(_), do: []
 end
