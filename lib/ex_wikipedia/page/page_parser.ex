@@ -129,7 +129,7 @@ defmodule ExWikipedia.PageParser do
 
     with {:ok, document} <- html_parser.parse_document(text),
          [{_tag, _attr, ast} | _] <- html_parser.filter_out(document, "table"),
-         [_first, _second, toc | _rest] <- html_parser.find(ast, "div") do
+         [toc] <- html_parser.find(ast, "div\#toc") do
       toc_index = Enum.find_index(ast, fn x -> x == toc end)
 
       case toc_index do
