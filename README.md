@@ -53,7 +53,7 @@ See `ExWikipedia.Page.fetch/2` for full implementation details.
 ```elixir
 def deps do
   [
-    {:ex_wikipedia, "~> 0.1.0"}
+    {:ex_wikipedia, "~> 0.1.2"}
   ]
 end
 ```

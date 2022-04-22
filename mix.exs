@@ -4,7 +4,7 @@ defmodule ExWikipedia.MixProject do
   def project do
     [
       app: :ex_wikipedia,
-      version: "0.1.1",
+      version: "0.1.2",
       elixir: "~> 1.13.4",
       package: package(),
       description: "Elixir wrapper for Wikipedia's API.",
