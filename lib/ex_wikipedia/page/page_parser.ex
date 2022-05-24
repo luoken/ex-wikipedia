@@ -169,16 +169,20 @@ defmodule ExWikipedia.PageParser do
       |> html_parser.filter_out("span.mw-editsection")
       |> html_parser.traverse_and_update(fn
         {"h2", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
-          {"h2", [], [{"span", [{"class", "mw-headline"}, id], ["== #{text} =="]}]}
+          {"h2", [],
+           [{"span", [{"class", "mw-headline"}, id], ["== #{html_parser.text(text)} =="]}]}
 
         {"h3", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
-          {"h3", [], [{"span", [{"class", "mw-headline"}, id], ["=== #{text} ==="]}]}
+          {"h3", [],
+           [{"span", [{"class", "mw-headline"}, id], ["=== #{html_parser.text(text)} ==="]}]}
 
         {"h4", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
-          {"h4", [], [{"span", [{"class", "mw-headline"}, id], ["==== #{text} ===="]}]}
+          {"h4", [],
+           [{"span", [{"class", "mw-headline"}, id], ["==== #{html_parser.text(text)} ===="]}]}
 
         {"h4", [], [_, {"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
-          {"h4", [], [{"span", [{"class", "mw-headline"}, id], ["==== #{text} ===="]}]}
+          {"h4", [],
+           [{"span", [{"class", "mw-headline"}, id], ["==== #{html_parser.text(text)} ===="]}]}
 
         other ->
           other
