@@ -167,25 +167,8 @@ defmodule ExWikipedia.PageParser do
       |> html_parser.filter_out("div.toc")
       |> html_parser.filter_out(".thumb")
       |> html_parser.filter_out("span.mw-editsection")
-      |> html_parser.traverse_and_update(fn
-        {"h2", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
-          {"h2", [],
-           [{"span", [{"class", "mw-headline"}, id], ["== #{html_parser.text(text)} =="]}]}
-
-        {"h3", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
-          {"h3", [],
-           [{"span", [{"class", "mw-headline"}, id], ["=== #{html_parser.text(text)} ==="]}]}
-
-        {"h4", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
-          {"h4", [],
-           [{"span", [{"class", "mw-headline"}, id], ["==== #{html_parser.text(text)} ===="]}]}
-
-        {"h4", [], [_, {"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]} ->
-          {"h4", [],
-           [{"span", [{"class", "mw-headline"}, id], ["==== #{html_parser.text(text)} ===="]}]}
-
-        other ->
-          other
+      |> html_parser.traverse_and_update(fn text ->
+        format_headers(text, html_parser)
       end)
       |> html_parser.text()
       |> String.trim()
@@ -193,6 +176,71 @@ defmodule ExWikipedia.PageParser do
       _ -> ""
     end
   end
+
+
+  defp format_headers(
+         {"h2", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]},
+         _html_parser
+       )
+       when is_binary(text) do
+    {"h2", [], [{"span", [{"class", "mw-headline"}, id], ["== #{text} =="]}]}
+  end
+
+  defp format_headers(
+         {"h2", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]},
+         html_parser
+       ) do
+    {"h2", [], [{"span", [{"class", "mw-headline"}, id], ["== #{html_parser.text(text)} =="]}]}
+  end
+
+  defp format_headers(
+         {"h3", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]},
+         _html_parser
+       )
+       when is_binary(text) do
+    {"h3", [], [{"span", [{"class", "mw-headline"}, id], ["=== #{text} ==="]}]}
+  end
+
+  defp format_headers(
+         {"h3", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]},
+         html_parser
+       ) do
+    {"h3", [], [{"span", [{"class", "mw-headline"}, id], ["=== #{html_parser.text(text)} ==="]}]}
+  end
+
+  defp format_headers(
+         {"h4", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]},
+         _html_parser
+       )
+       when is_binary(text) do
+    {"h4", [], [{"span", [{"class", "mw-headline"}, id], ["==== #{text} ===="]}]}
+  end
+
+  defp format_headers(
+         {"h4", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]},
+         html_parser
+       ) do
+    {"h4", [],
+     [{"span", [{"class", "mw-headline"}, id], ["==== #{html_parser.text(text)} ===="]}]}
+  end
+
+  defp format_headers(
+         {"h4", [], [_, {"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]},
+         __html_parser
+       )
+       when is_binary(text) do
+    {"h4", [], [{"span", [{"class", "mw-headline"}, id], ["==== #{text} ===="]}]}
+  end
+
+  defp format_headers(
+         {"h4", [], [_, {"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]},
+         html_parser
+       ) do
+    {"h4", [],
+     [{"span", [{"class", "mw-headline"}, id], ["==== #{html_parser.text(text)} ===="]}]}
+  end
+
+  defp format_headers(header, _html_parser), do: header
 
   defp get_url(%{headhtml: %{*: headhtml}}, %{html_parser: html_parser}) do
     with {:ok, head} <- html_parser.parse_document(headhtml),
