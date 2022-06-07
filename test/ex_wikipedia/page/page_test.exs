@@ -5,14 +5,6 @@ defmodule ExWikipedia.Page.PageTest do
   import Mox
   setup :verify_on_exit!
 
-  setup do
-    language = Application.get_env(:ex_wikipedia, :language)
-
-    on_exit(fn ->
-      Application.put_env(:ex_wikipedia, :language, language)
-    end)
-  end
-
   describe "fetch/2" do
     @tag contents: "54173.json"
     test ":ok when able to parse response", %{contents: contents} do
@@ -79,28 +71,20 @@ defmodule ExWikipedia.Page.PageTest do
     end
 
     test ":error when non 200 status code is returned" do
-      language = Application.put_env(:ex_wikipedia, :language, "en")
-
       http_client =
         HTTPClientMock
         |> expect(:get, fn _, _, _ ->
           {:ok, %{body: "redirected", status_code: 301}}
         end)
 
-      assert {:error, _} = Page.fetch(12_345, http_client: http_client, language: language)
+      assert {:error, _} = Page.fetch(12_345, http_client: http_client)
     end
 
     test ":error when non integer id is supplied" do
       assert {:error, _} = Page.fetch("blah", [])
     end
 
-    test ":error when non binary id is supplied" do
-      assert {:error, _} = Page.fetch(%{})
-    end
-
     test ":error when unable to find body key" do
-      language = Application.put_env(:ex_wikipedia, :language, "en")
-
       http_client =
         HTTPClientMock
         |> expect(:get, fn _, _, _ ->
@@ -111,8 +95,7 @@ defmodule ExWikipedia.Page.PageTest do
            }}
         end)
 
-      assert {:error, _} =
-               Page.fetch(12_345, http_client: http_client, body_key: :payload, language: language)
+      assert {:error, _} = Page.fetch(12_345, http_client: http_client, body_key: :payload)
     end
   end
 end
