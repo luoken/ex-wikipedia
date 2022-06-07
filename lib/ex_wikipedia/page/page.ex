@@ -101,12 +101,16 @@ defmodule ExWikipedia.Page do
       |> Keyword.put(:follow_redirect, follow_redirect)
 
     with {:ok, raw_response} <-
-           http_client.get(build_url(id), http_headers, http_opts),
+           http_client.get(build_url(id, opts), http_headers, http_opts),
          :ok <- ok_http_status_code(raw_response, status_key),
          {:ok, body} <- get_body(raw_response, body_key),
          {:ok, response} <- decoder.decode(body, keys: :atoms),
          {:ok, parsed_response} <- parser.parse(response, parser_opts) do
       {:ok, struct(__MODULE__, parsed_response)}
+    else
+      _ ->
+        {:error,
+         "There is no page with ID #{id} in #{Keyword.fetch!(opts, :language)}.wikipedia.org"}
     end
   end
 
@@ -140,7 +144,10 @@ defmodule ExWikipedia.Page do
     end
   end
 
-  defp build_url(page_id) do
-    "https://en.wikipedia.org/w/api.php?action=parse&pageid=#{page_id}&format=json&redirects=true&prop=text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"
+  defp build_url(page_id, opts) do
+    language =
+      Keyword.get(opts, :language, Application.get_env(:ex_wikipedia, :default_language, "en"))
+
+    "https://#{language}.wikipedia.org/w/api.php?action=parse&pageid=#{page_id}&format=json&redirects=true&prop=text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"
   end
 end
