@@ -177,7 +177,6 @@ defmodule ExWikipedia.PageParser do
     end
   end
 
-
   defp format_headers(
          {"h2", [], [{"span", [{"class", "mw-headline"}, {"id", _} = id], [text]}]},
          _html_parser
