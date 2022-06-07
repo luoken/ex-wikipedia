@@ -1,6 +1,6 @@
 # ExWikipedia
 
-`ExWikipedia` is an Elixir client for the [Wikipedia API](https://en.wikipedia.org/w/api.php). Other languages are supported as they are passed in through options.
+`ExWikipedia` is an Elixir client for the [Wikipedia API](https://en.wikipedia.org/w/api.php). Other languages are supported as they are passed in through options. See usage section for example.
 
 ## Usage
 
@@ -23,7 +23,9 @@ iex> ExWikipedia.page(54173, by: :page_id)
    title: "Pulp Fiction",
    url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
  }}
+```
 
+```elixir
 iex> ExWikipedia.page("Pulp Fiction", by: :title)
 {:ok,
  %ExWikipedia.Page{
@@ -44,6 +46,18 @@ iex> ExWikipedia.page("Pulp Fiction", by: :title)
  }}
 ```
 
+```elixir
+ iex> ExWikipedia.page(54173, language: "ja")
+ {:ok,
+ %ExWikipedia.Page{
+   categories: ["LCCN識別子が指定されている記事",
+    "労働における休み", "参照方法", "曜日",
+    "独自研究の除去が必要な記事/2019年4月"],
+   content: "休日（きゅうじつ）とは、「休みの日」のことであり、業務・授業などを休む日である。辞書『広辞苑』では「休日」の2番目の意味として、特に日曜日や国民の祝日（≒各国の法定の祝日）など、という説明をしている。\n「休暇」（きゅうか）のほうも同様に、学校・会社・官庁などの「やすみ」のことである。そこに追加説明があり、しばしば日曜・祝日など以外のやすみを言う、とされる。\nなお、英語では土日" <> ...,
+   # ... etc...
+  }}
+ ```
+
 ## Defaults
 
 This currently uses `HTTPoison` as its default HTTP client.
@@ -63,21 +77,11 @@ If you wish to use a different HTTP client to drive the requests, e.g. `Tesla`, 
 `Jason` is the default JSON encoder (customize this via the `:decoder` option).
 `Floki` is the default HTML parser used by the page parser. See `ExWikipedia.PageParser` for its use.
 `"en"` is the default language for the wikipedia look up. The default language can be changed inside of 
-`config.exs`. The `language` option is also available for setting language on a function call basis. E.g. 
+`config.exs`. The `language` option is also available for setting language on a function call basis.
 `language: "en"`
 `page_id` is the default way the Wikipedia API will look up by.
 
-```elixir
- iex> ExWikipedia.page(54173, language: "ja")
- {:ok,
- %ExWikipedia.Page{
-   categories: ["LCCN識別子が指定されている記事",
-    "労働における休み", "参照方法", "曜日",
-    "独自研究の除去が必要な記事/2019年4月"],
-   content: "休日（きゅうじつ）とは、「休みの日」のことであり、業務・授業などを休む日である。辞書『広辞苑』では「休日」の2番目の意味として、特に日曜日や国民の祝日（≒各国の法定の祝日）など、という説明をしている。\n「休暇」（きゅうか）のほうも同様に、学校・会社・官庁などの「やすみ」のことである。そこに追加説明があり、しばしば日曜・祝日など以外のやすみを言う、とされる。\nなお、英語では土日" <> ...,
-   # ... etc...
-  }}
- ```
+
 See `ExWikipedia.Page.fetch/2` for full implementation details.
 
 ## Installation
