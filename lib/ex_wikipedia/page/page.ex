@@ -73,12 +73,14 @@ defmodule ExWikipedia.Page do
       See `ExWikipedia.PageParser` for supported option.
     - `:follow_redirect`: indicates whether or not the content from a redirected
        page constitutes a valid response. Default: `#{inspect(@follow_redirect)}`
+    - `:language`: Language for searching through wikipedia. Default: "en"
+    - `:by`: Queries Wikipedia API by `:page_id` or `:title`. Default: :page_id
 
   """
   @impl ExWikipedia
   def fetch(id, opts \\ [])
 
-  def fetch(id, opts) when is_integer(id) do
+  def fetch(id, opts) do
     http_client = Keyword.get(opts, :http_client, @default_http_client)
 
     decoder = Keyword.get(opts, :decoder, @default_json_parser)
@@ -110,22 +112,9 @@ defmodule ExWikipedia.Page do
     else
       _ ->
         {:error,
-         "There is no page with ID #{id} in #{Keyword.fetch!(opts, :language)}.wikipedia.org"}
+         "There is no page with #{Keyword.get(opts, :by, :page_id)} #{id} in #{Keyword.get(opts, :language, Application.fetch_env!(:ex_wikipedia, :default_language))}.wikipedia.org"}
     end
   end
-
-  def fetch(id, opts) when is_binary(id) do
-    Integer.parse(id)
-    |> case do
-      {num, _} ->
-        fetch(num, opts)
-
-      :error ->
-        {:error, "The Wikipedia ID supplied is not valid."}
-    end
-  end
-
-  def fetch(_id, _opts), do: {:error, "The Wikipedia ID supplied is not valid."}
 
   defp get_body(raw_response, body_key) do
     case Map.fetch(raw_response, body_key) do
@@ -144,10 +133,23 @@ defmodule ExWikipedia.Page do
     end
   end
 
-  defp build_url(page_id, opts) do
+  defp build_url(page, opts) do
     language =
-      Keyword.get(opts, :language, Application.get_env(:ex_wikipedia, :default_language, "en"))
+      Keyword.get(opts, :language, Application.fetch_env!(:ex_wikipedia, :default_language))
 
-    "https://#{language}.wikipedia.org/w/api.php?action=parse&pageid=#{page_id}&format=json&redirects=true&prop=text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"
+    type = Keyword.get(opts, :by, :page_id)
+
+    build_by_type(page, language, type)
   end
+
+  defp build_by_type(page, lang, :title) do
+    "https://#{lang}.wikipedia.org/w/api.php?action=parse&page=#{page}&format=json&redirects=true&prop=text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"
+    |> URI.encode()
+  end
+
+  defp build_by_type(page, lang, :page_id) do
+    "https://#{lang}.wikipedia.org/w/api.php?action=parse&pageid=#{page}&format=json&redirects=true&prop=text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"
+  end
+
+  defp build_by_type(_page, _lang, type), do: "Type #{type} is not supported."
 end
