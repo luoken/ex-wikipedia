@@ -122,10 +122,6 @@ defmodule ExWikipedia.Page do
          {:ok, response} <- decoder.decode(body, keys: :atoms),
          {:ok, parsed_response} <- parser.parse(response, parser_opts) do
       {:ok, struct(__MODULE__, parsed_response)}
-    else
-      _ ->
-        {:error,
-         "There is no page with #{Keyword.get(opts, :by, :page_id)} #{id} in #{Keyword.get(opts, :language, Application.fetch_env!(:ex_wikipedia, :default_language))}.wikipedia.org"}
     end
   end
 
