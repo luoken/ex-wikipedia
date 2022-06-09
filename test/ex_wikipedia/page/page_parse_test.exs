@@ -57,21 +57,21 @@ defmodule ExWikipedia.PageParserTest do
     end
 
     @tag contents: "10971271.json"
-    test "returns :error when content represents a redirected page but follow_redirect is false",
+    test "returns :error when content represents a redirected page but allow_redirect is false",
          %{contents: contents} do
       decoded_contents = Jason.decode!(contents, keys: :atoms)
 
-      assert {:error, _} = PageParser.parse(decoded_contents, follow_redirect: false)
+      assert {:error, _} = PageParser.parse(decoded_contents, allow_redirect: false)
     end
 
     @tag contents: "10971271.json"
-    test "returns :ok when content represents a redirected page and follow_redirect is true", %{
+    test "returns :ok when content represents a redirected page and allow_redirect is true", %{
       contents: contents
     } do
       decoded_contents = Jason.decode!(contents, keys: :atoms)
 
       assert {:ok, %{is_redirect?: true}} =
-               PageParser.parse(decoded_contents, follow_redirect: true)
+               PageParser.parse(decoded_contents, allow_redirect: true)
     end
 
     test ":ok when categories is not present" do
