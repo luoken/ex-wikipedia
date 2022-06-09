@@ -75,7 +75,7 @@ defmodule ExWikipedia.Page.PageTest do
     end
 
     test ":error when language code not 2 characters" do
-      assert {:error, _} = Page.fetch(12345, language: "too-long")
+      assert {:error, _} = Page.fetch(12_345, language: "too-long")
     end
 
     test ":error when non 200 status code is returned" do
