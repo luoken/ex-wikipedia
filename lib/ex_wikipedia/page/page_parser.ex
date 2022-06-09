@@ -9,7 +9,7 @@ defmodule ExWikipedia.PageParser do
   @behaviour ExWikipedia.Parser
 
   @default_html_parser Floki
-  @follow_redirect true
+  @allow_redirect true
 
   @doc """
   This parses a map and HTML contained in it, sanitizes it, and returns a map suitable to be marshalled into
@@ -18,8 +18,8 @@ defmodule ExWikipedia.PageParser do
   ## Options:
 
     - `:html_parser`: Parser used to parse HTML. Default: `#{@default_html_parser}`
-    - `:follow_redirect`: indicates whether or not the content from a redirected
-       page constitutes a valid response. Default: `#{@follow_redirect}`
+    - `:allow_redirect`: indicates whether or not the content from a redirected
+       page constitutes a valid response. Default: `#{@allow_redirect}`
 
 
   ## Examples
@@ -64,13 +64,13 @@ defmodule ExWikipedia.PageParser do
   def parse(%{error: %{info: info}}, _opts), do: {:error, info}
 
   def parse(json, opts) when is_list(opts) do
-    defaults = %{follow_redirect: @follow_redirect, html_parser: @default_html_parser}
+    defaults = %{allow_redirect: @allow_redirect, html_parser: @default_html_parser}
     do_parse(json, Map.merge(defaults, opts |> Map.new()))
   end
 
-  defp do_parse(%{parse: %{redirects: redirects}}, %{follow_redirect: false})
+  defp do_parse(%{parse: %{redirects: redirects}}, %{allow_redirect: false})
        when length(redirects) > 0 do
-    {:error, "Content is from a redirected page, but `follow_redirect` is set to false"}
+    {:error, "Content is from a redirected page, but `allow_redirect` is set to false"}
   end
 
   defp do_parse(

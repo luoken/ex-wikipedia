@@ -70,6 +70,14 @@ defmodule ExWikipedia.Page.PageTest do
               }} = Page.fetch("12345", http_client: http_client)
     end
 
+    test ":error when :by not in allowed fields" do
+      assert {:error, _} = Page.fetch("12345", by: :bad_field)
+    end
+
+    test ":error when language code not 2 characters" do
+      assert {:error, _} = Page.fetch(12_345, language: "too-long")
+    end
+
     test ":error when non 200 status code is returned" do
       http_client =
         HTTPClientMock

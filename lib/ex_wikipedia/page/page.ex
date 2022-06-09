@@ -1,42 +1,45 @@
 defmodule ExWikipedia.Page do
   @moduledoc """
   `ExWikipedia.page/2` delegates here. This module represents the current
-  implementation.
+  implementation for requesting and parsing a Wikipedia page.
   """
 
   @behaviour ExWikipedia
 
-  @follow_redirect true
+  @allow_redirect true
+  @allowed_id_keys [:page, :pageid]
+  @default_body_key :body
+  @default_by :pageid
   @default_http_client HTTPoison
+  @default_lang "en"
   @default_json_parser Jason
   @default_status_key :status_code
-  @default_body_key :body
 
   alias ExWikipedia.PageParser
 
   @typedoc """
-  - `:external_links` - List of fully qualified URLs to associate with the Wikipedia page.
-  - `:categories` - List of categories the Wikipedia page belongs to
-  - `:content` - String text found on Wikipedia page
+  - `:external_links` - List of fully qualified URLs linked from the Wikipedia page.
+  - `:categories` - List of categories to which the Wikipedia page belongs
+  - `:content` - Main content of the Wikipedia page, as a string
   - `:images` - List of relative URLs pointing to images found on the Wikipedia page
   - `:page_id` - Wikipedia page id represented as an integer
   - `:revision_id` - Wikipedia page revision id represented as an integer
-  - `:summary` - String text representing Wikipedia page's summary
+  - `:summary` - Summary of page, as a string
   - `:title` - String title of the Wikipedia page
-  - `:url` - Fully qualified URL of Wikipedia page
+  - `:url` - Fully qualified URL of the Wikipedia page
   - `:is_redirect?` - Boolean. Indicates whether the content is from a page
     redirected from the one requested.
   """
   @type t :: %__MODULE__{
           external_links: [String.t()],
           categories: [String.t()],
-          content: binary(),
+          content: String.t(),
           images: [String.t()],
-          page_id: integer(),
-          revision_id: integer(),
-          summary: binary(),
-          title: binary(),
-          url: binary(),
+          page_id: non_neg_integer(),
+          revision_id: non_neg_integer(),
+          summary: String.t(),
+          title: String.t(),
+          url: String.t(),
           is_redirect?: boolean(),
           links: [String.t()]
         }
@@ -56,7 +59,7 @@ defmodule ExWikipedia.Page do
             links: []
 
   @doc """
-  Fetches a Wikipedia page by its ID.
+  Fetches a Wikipedia page by an identifier (see `:by` option).
 
   ## Options
 
@@ -70,11 +73,12 @@ defmodule ExWikipedia.Page do
       This may change depending on the client used. Default: `#{@default_status_key}`
     - `:parser`: Parser used to parse response returned from client. Default: `ExWikipedia.PageParser`
     - `:parser_opts`: Parser options passed the the parser. Default: `[]`.
-      See `ExWikipedia.PageParser` for supported option.
-    - `:follow_redirect`: indicates whether or not the content from a redirected
-       page constitutes a valid response. Default: `#{inspect(@follow_redirect)}`
-    - `:language`: Language for searching through wikipedia. Default: "en"
-    - `:by`: Queries Wikipedia API by `:page_id` or `:title`. Default: :page_id
+      See `ExWikipedia.PageParser` for supported options.
+    - `:allow_redirect`: indicates whether or not the content from a redirected
+       page constitutes a valid response. Default: `#{inspect(@allow_redirect)}`
+    - `:language`: Identifies a specific Wikipedia instance to search. You can use the
+      `:default_language` config option to set this value. Default: `#{@default_lang}`
+    - `:by`: The field used to identify the page. `#{inspect(@allowed_id_keys)}`. Default: `#{@default_by}`
 
   """
   @impl ExWikipedia
@@ -95,24 +99,29 @@ defmodule ExWikipedia.Page do
 
     parser = Keyword.get(opts, :parser, PageParser)
 
-    follow_redirect = Keyword.get(opts, :follow_redirect, @follow_redirect)
+    allow_redirect = Keyword.get(opts, :allow_redirect, @allow_redirect)
+
+    language =
+      opts
+      |> Keyword.get(
+        :language,
+        Application.get_env(:ex_wikipedia, :default_language, @default_lang)
+      )
+
+    id_key = Keyword.get(opts, :by, @default_by)
 
     parser_opts =
       opts
       |> Keyword.get(:parser_opts, [])
-      |> Keyword.put(:follow_redirect, follow_redirect)
+      |> Keyword.put(:allow_redirect, allow_redirect)
 
-    with {:ok, raw_response} <-
-           http_client.get(build_url(id, opts), http_headers, http_opts),
+    with {:ok, url} <- build_url(id_key, id, language),
+         {:ok, raw_response} <- http_client.get(url, http_headers, http_opts),
          :ok <- ok_http_status_code(raw_response, status_key),
          {:ok, body} <- get_body(raw_response, body_key),
          {:ok, response} <- decoder.decode(body, keys: :atoms),
          {:ok, parsed_response} <- parser.parse(response, parser_opts) do
       {:ok, struct(__MODULE__, parsed_response)}
-    else
-      _ ->
-        {:error,
-         "There is no page with #{Keyword.get(opts, :by, :page_id)} #{id} in #{Keyword.get(opts, :language, Application.fetch_env!(:ex_wikipedia, :default_language))}.wikipedia.org"}
     end
   end
 
@@ -133,23 +142,18 @@ defmodule ExWikipedia.Page do
     end
   end
 
-  defp build_url(page, opts) do
-    language =
-      Keyword.get(opts, :language, Application.fetch_env!(:ex_wikipedia, :default_language))
-
-    type = Keyword.get(opts, :by, :page_id)
-
-    build_by_type(page, language, type)
+  defp build_url(id_key, id_value, <<lang::binary-size(2)>>) when id_key in @allowed_id_keys do
+    {:ok,
+     "https://#{lang}.wikipedia.org/w/api.php?action=parse&#{id_key}=#{id_value}&format=json&redirects=true&prop=text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"
+     |> URI.encode()}
   end
 
-  defp build_by_type(page, lang, :title) do
-    "https://#{lang}.wikipedia.org/w/api.php?action=parse&page=#{page}&format=json&redirects=true&prop=text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"
-    |> URI.encode()
+  defp build_url(id_key, _, lang) when id_key in @allowed_id_keys do
+    {:error,
+     "Unsupported language identifier #{inspect(lang)}; language codes must be 2 characters"}
   end
 
-  defp build_by_type(page, lang, :page_id) do
-    "https://#{lang}.wikipedia.org/w/api.php?action=parse&pageid=#{page}&format=json&redirects=true&prop=text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"
+  defp build_url(id_key, _, _) when id_key not in @allowed_id_keys do
+    {:error, "Unsupported :by field #{inspect(id_key)}"}
   end
-
-  defp build_by_type(_page, _lang, type), do: "Type #{type} is not supported."
 end
