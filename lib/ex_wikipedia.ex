@@ -37,7 +37,7 @@ defmodule ExWikipedia do
       {:error, "There is no page with ID 1."}
 
       iex> ExWikipedia.page(%{})
-      {:error, "The Wikipedia ID supplied is not valid."}
+      {:error, "%{} is not supported type for lookup."}
 
   Redirects are allowed by default. Compare the following two results.
 

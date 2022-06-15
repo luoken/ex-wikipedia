@@ -70,10 +70,6 @@ defmodule ExWikipedia.Page.PageTest do
               }} = Page.fetch("12345", http_client: http_client)
     end
 
-    test ":error when :by not in allowed fields" do
-      assert {:error, _} = Page.fetch("12345", by: :bad_field)
-    end
-
     test ":error when language code not 2 characters" do
       assert {:error, _} = Page.fetch(12_345, language: "too-long")
     end
@@ -88,10 +84,6 @@ defmodule ExWikipedia.Page.PageTest do
       assert {:error, _} = Page.fetch(12_345, http_client: http_client)
     end
 
-    test ":error when non integer id is supplied" do
-      assert {:error, _} = Page.fetch("blah", [])
-    end
-
     test ":error when unable to find body key" do
       http_client =
         HTTPClientMock
@@ -104,6 +96,10 @@ defmodule ExWikipedia.Page.PageTest do
         end)
 
       assert {:error, _} = Page.fetch(12_345, http_client: http_client, body_key: :payload)
+    end
+
+    test ":error on unsupported languages" do
+      assert {:error, _} = Page.fetch(12_345, language: 123)
     end
   end
 end
