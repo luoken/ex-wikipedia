@@ -149,6 +149,10 @@ defmodule ExWikipedia.Page do
      |> URI.encode()}
   end
 
+  defp build_url(id_value, _lang) when not is_binary(id_value) and not is_integer(id_value) do
+    {:error, "#{inspect(id_value)} is not supported type for lookup."}
+  end
+
   defp build_url(_, lang) do
     {:error, "Unsupported language identifier #{inspect(lang)}; language codes must be a string."}
   end
