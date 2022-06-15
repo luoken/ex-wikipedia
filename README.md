@@ -5,7 +5,7 @@
 ## Usage
 
 ```elixir
-iex> ExWikipedia.page(54173, by: :page_id)
+iex> ExWikipedia.page(54173)
 {:ok,
  %ExWikipedia.Page{
    categories: ["Webarchive template wayback links",
@@ -26,7 +26,7 @@ iex> ExWikipedia.page(54173, by: :page_id)
 ```
 
 ```elixir
-iex> ExWikipedia.page("Pulp Fiction", by: :title)
+iex> ExWikipedia.page("Pulp_Fiction")
 {:ok,
  %ExWikipedia.Page{
    categories: ["Webarchive template wayback links",
