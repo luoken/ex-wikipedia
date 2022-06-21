@@ -7,6 +7,7 @@ defmodule ExWikipedia.Page do
   @behaviour ExWikipedia
 
   @allow_redirect true
+  @allowed_id_keys [:page, :pageid]
   @default_body_key :body
   @default_http_client HTTPoison
   @default_lang "en"
@@ -76,6 +77,7 @@ defmodule ExWikipedia.Page do
        page constitutes a valid response. Default: `#{inspect(@allow_redirect)}`
     - `:language`: Identifies a specific Wikipedia instance to search. You can use the
       `:default_language` config option to set this value. Default: `#{@default_lang}`
+    - `:by`: The field used to identify the page. `#{inspect(@allowed_id_keys)}`.
 
   """
   @impl ExWikipedia
@@ -105,12 +107,14 @@ defmodule ExWikipedia.Page do
         Application.get_env(:ex_wikipedia, :default_language, @default_lang)
       )
 
+    id_key = Keyword.get(opts, :by, detect_id_type(id))
+
     parser_opts =
       opts
       |> Keyword.get(:parser_opts, [])
       |> Keyword.put(:allow_redirect, allow_redirect)
 
-    with {:ok, url} <- build_url(id, language),
+    with {:ok, url} <- build_url(id_key, id, language),
          {:ok, raw_response} <- http_client.get(url, http_headers, http_opts),
          :ok <- ok_http_status_code(raw_response, status_key),
          {:ok, body} <- get_body(raw_response, body_key),
@@ -137,23 +141,27 @@ defmodule ExWikipedia.Page do
     end
   end
 
-  defp build_url(id_value, lang) when is_binary(lang) and is_binary(id_value) do
+  defp build_url(id_key, id_value, lang)
+       when (id_key in @allowed_id_keys and is_binary(lang)) or is_atom(lang) do
     {:ok,
-     "https://#{lang}.wikipedia.org/w/api.php?action=parse&page=#{id_value}&format=json&redirects=true&prop=text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"
+     "https://#{lang}.wikipedia.org/w/api.php?action=parse&#{id_key}=#{id_value}&format=json&redirects=true&prop=text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"
      |> URI.encode()}
   end
 
-  defp build_url(id_value, lang) when is_binary(lang) and is_integer(id_value) do
-    {:ok,
-     "https://#{lang}.wikipedia.org/w/api.php?action=parse&pageid=#{id_value}&format=json&redirects=true&prop=text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"
-     |> URI.encode()}
+  defp build_url(id_key, _, _) when id_key not in @allowed_id_keys do
+    {:error, "Unsupported :by field #{inspect(id_key)}"}
   end
 
-  defp build_url(id_value, _lang) when not is_binary(id_value) and not is_integer(id_value) do
+  defp build_url(_id_key, id_value, _lang)
+       when not is_binary(id_value) and not is_integer(id_value) do
     {:error, "#{inspect(id_value)} is not supported type for lookup."}
   end
 
-  defp build_url(_, lang) do
+  defp build_url(_id_key, _, lang) do
     {:error, "Unsupported language identifier #{inspect(lang)}; language codes must be a string."}
   end
+
+  defp detect_id_type(id) when is_integer(id), do: :pageid
+
+  defp detect_id_type(id) when is_binary(id) or is_atom(id), do: :page
 end
