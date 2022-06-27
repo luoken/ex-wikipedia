@@ -47,6 +47,47 @@ iex> ExWikipedia.page("Pulp_Fiction")
 ```
 
 ```elixir
+iex> ExWikipedia.page("Pulp_Fiction", by: :page)
+{:ok,
+ %ExWikipedia.Page{
+   categories: ["Webarchive template wayback links",
+    "All articles with dead external links",
+    "Articles with dead external links from June 2016", ...],
+   content: "Pulp Fiction is a 1994 American black comedy" <> ...,
+   external_links: ["https://www.bbfc.co.uk/releases/pulp-fiction-film-0",
+    "https://web.archive.org/web/20150510235257/http://www.bbfc.co.uk/releases/pulp-fiction-film-0",
+    "https://boxofficemojo.com/movies/?id=pulpfiction.htm", ...],
+   images: ["https://upload.wikimedia.org/wikipedia/en/3/3b/Pulp_Fiction_%281994%29_poster.jpg",
+    "https://upload.wikimedia.org/wikipedia/en/thumb/2/2e/Willis_in_Pulp_Fiction.jpg/", ...],
+   page_id: 54173,
+   revision_id: 1059110452,
+   summary: "Pulp Fiction is a 1994 American black comedy crime film written and directed by Quentin Tarantino, who conceived it with Roger Avary. Starring John Travolta, Samuel L. Jackson," <> ...,
+   title: "Pulp Fiction",
+   url: "https://en.wikipedia.org/wiki/Pulp_Fiction"
+ }}
+```
+
+```elixir
+iex> ExWikipedia.page(30007, by: :pageid)
+{:ok,
+ %ExWikipedia.Page{
+   categories: ["1990s English-language films", "1990s chase films",
+    "1990s dystopian films", "1990s science fiction action films", ...],
+   content: "The Matrix is a 1999 science fiction action film written and directed by the" <> ...,
+   external_links: ["https://www.bbfc.co.uk/releases/matrix-1970-3", ...],
+   images: ["https://upload.wikimedia.org/wikipedia/en/thumb/c/c1/The_Matrix_Poster.jpg/220px-The_Matrix_Poster.jpg", ...],
+   is_redirect?: false,
+   links: ["12 Monkeys", "1980s", "1999 in film", "2.35:1",
+    "2001: A Space Odyssey (film)", "26th Saturn Awards", ...],
+   page_id: 30007,
+   revision_id: 1095349510,
+   summary: "The Matrix is a 1999 science fiction action film written and directed by the Wachowskis." <> ...,
+   title: "The Matrix",
+   url: "https://en.wikipedia.org/wiki/The_Matrix"
+ }}
+```
+
+```elixir
  iex> ExWikipedia.page(54173, language: "ja")
  {:ok,
  %ExWikipedia.Page{
