@@ -101,5 +101,10 @@ defmodule ExWikipedia.Page.PageTest do
     test ":error on unsupported languages" do
       assert {:error, _} = Page.fetch(12_345, language: 123)
     end
+
+    test "encodes urls with ampersand" do
+      assert {:ok, %Page{url: "https://en.wikipedia.org/wiki/Seehund,_Puma_%26_Co."}} =
+               Page.fetch("Seehund, Puma & Co.", by: :page, language: "en")
+    end
   end
 end

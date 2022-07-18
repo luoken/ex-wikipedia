@@ -141,19 +141,20 @@ defmodule ExWikipedia.Page do
     end
   end
 
-  # Splitting up the encoding for the id_value and props may seem weird but when trying to decode
-  # the "&" string using URI.decode/1 we will get back "&" unencoded. Splitting up the id_value
-  # and feeding it into URI.encode_www_form/1 will encode "&" into "%26".
   defp build_url(id_key, id_value, lang)
        when (id_key in @allowed_id_keys and is_binary(lang)) or is_atom(lang) do
-    id_value =
-      case is_binary(id_value) do
-        true -> URI.encode_www_form(id_value)
-        false -> id_value
-      end
-
-    {:ok,
-     "https://#{lang}.wikipedia.org/w/api.php?action=parse&#{id_key}=#{id_value}&format=json&redirects=true&prop=#{URI.encode("text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml")}"}
+    {
+      :ok,
+      "https://#{lang}.wikipedia.org/w/api.php?" <>
+        URI.encode_query([
+          {:action, "parse"},
+          {id_key, id_value},
+          {:format, "json"},
+          {:redirects, true},
+          {:prop,
+           "text|langlinks|categories|links|templates|images|externallinks|sections|revid|displaytitle|iwlinks|properties|parsewarnings|headhtml"}
+        ])
+    }
   end
 
   defp build_url(id_key, _, _) when id_key not in @allowed_id_keys do
