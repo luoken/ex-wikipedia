@@ -102,9 +102,31 @@ defmodule ExWikipedia.Page.PageTest do
       assert {:error, _} = Page.fetch(12_345, language: 123)
     end
 
-    test "encodes urls with ampersand" do
-      assert {:ok, %Page{url: "https://en.wikipedia.org/wiki/Seehund,_Puma_%26_Co."}} =
-               Page.fetch("Seehund, Puma & Co.", by: :page, language: "en")
+    @tag contents: "331370007.json"
+    test "encodes urls with ampersand", %{contents: contents} do
+      http_client =
+        HTTPClientMock
+        |> expect(:get, fn _, _, _ ->
+          {:ok,
+           %{
+             body: contents,
+             request: %{
+               url:
+                 "https://en.wikipedia.org/w/api.php?action=parse&page=Seehund%2C+Puma+%26+Co.&format=json&redirects=true&prop=text%7Clanglinks%7Ccategories%7Clinks%7Ctemplates%7Cimages%7Cexternallinks%7Csections%7Crevid%7Cdisplaytitle%7Ciwlinks%7Cproperties%7Cparsewarnings%7Cheadhtml"
+             },
+             status_code: 200
+           }}
+        end)
+
+      assert {:ok,
+              %Page{
+                url: "https://en.wikipedia.org/wiki/Seehund,_Puma_%26_Co."
+              }} =
+               Page.fetch("Seehund, Puma & Co.",
+                 by: :page,
+                 language: "en",
+                 http_client: http_client
+               )
     end
   end
 end
