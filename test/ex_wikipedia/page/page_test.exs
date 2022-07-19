@@ -102,7 +102,7 @@ defmodule ExWikipedia.Page.PageTest do
       assert {:error, _} = Page.fetch(12_345, language: 123)
     end
 
-    @tag contents: "331370007.json"
+    @tag contents: "33137006.json"
     test "encodes urls with ampersand", %{contents: contents} do
       http_client =
         HTTPClientMock
