@@ -101,32 +101,25 @@ defmodule ExWikipedia.Page.PageTest do
     test ":error on unsupported languages" do
       assert {:error, _} = Page.fetch(12_345, language: 123)
     end
+  end
 
-    @tag contents: "33137006.json"
-    test "encodes urls with ampersand", %{contents: contents} do
-      http_client =
-        HTTPClientMock
-        |> expect(:get, fn _, _, _ ->
-          {:ok,
-           %{
-             body: contents,
-             request: %{
-               url:
-                 "https://en.wikipedia.org/w/api.php?action=parse&page=Seehund%2C+Puma+%26+Co.&format=json&redirects=true&prop=text%7Clanglinks%7Ccategories%7Clinks%7Ctemplates%7Cimages%7Cexternallinks%7Csections%7Crevid%7Cdisplaytitle%7Ciwlinks%7Cproperties%7Cparsewarnings%7Cheadhtml"
-             },
-             status_code: 200
-           }}
-        end)
-
+  describe "build_url/3" do
+    test "properly encodes url" do
       assert {:ok,
-              %Page{
-                url: "https://en.wikipedia.org/wiki/Seehund,_Puma_%26_Co."
-              }} =
-               Page.fetch("Seehund, Puma & Co.",
-                 by: :page,
-                 language: "en",
-                 http_client: http_client
-               )
+              "https://en.wikipedia.org/w/api.php?action=parse&page=Seehund%2C+Puma+%26+Co.&format=json&redirects=true&prop=text%7Clanglinks%7Ccategories%7Clinks%7Ctemplates%7Cimages%7Cexternallinks%7Csections%7Crevid%7Cdisplaytitle%7Ciwlinks%7Cproperties%7Cparsewarnings%7Cheadhtml"} =
+               Page.build_url(:page, "Seehund, Puma & Co.", "en")
+    end
+
+    test ":error when unsupported key is supplied" do
+      assert {:error, _} = Page.build_url(:invalid, 123, "en")
+    end
+
+    test ":error when invalid id_value is supplied" do
+      assert {:error, _} = Page.build_url(:page, [], "en")
+    end
+
+    test ":error when invalid language is supplied" do
+      assert {:error, _} = Page.build_url(:page, 12_345, 123)
     end
   end
 end

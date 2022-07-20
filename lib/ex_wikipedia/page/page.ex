@@ -141,8 +141,17 @@ defmodule ExWikipedia.Page do
     end
   end
 
-  defp build_url(id_key, id_value, lang)
-       when (id_key in @allowed_id_keys and is_binary(lang)) or is_atom(lang) do
+  def build_url(_id_key, id_value, _lang)
+      when not is_binary(id_value) and not is_integer(id_value) do
+    {:error, "#{inspect(id_value)} is not supported type for lookup."}
+  end
+
+  def build_url(id_key, _, _) when id_key not in @allowed_id_keys do
+    {:error, "Unsupported :by field #{inspect(id_key)}"}
+  end
+
+  def build_url(id_key, id_value, lang)
+      when (id_key in @allowed_id_keys and is_binary(lang)) or is_atom(lang) do
     {
       :ok,
       "https://#{lang}.wikipedia.org/w/api.php?" <>
@@ -157,16 +166,7 @@ defmodule ExWikipedia.Page do
     }
   end
 
-  defp build_url(id_key, _, _) when id_key not in @allowed_id_keys do
-    {:error, "Unsupported :by field #{inspect(id_key)}"}
-  end
-
-  defp build_url(_id_key, id_value, _lang)
-       when not is_binary(id_value) and not is_integer(id_value) do
-    {:error, "#{inspect(id_value)} is not supported type for lookup."}
-  end
-
-  defp build_url(_id_key, _, lang) do
+  def build_url(_id_key, _, lang) do
     {:error, "Unsupported language identifier #{inspect(lang)}; language codes must be a string."}
   end
 
