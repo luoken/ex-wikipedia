@@ -114,7 +114,7 @@ defmodule ExWikipedia.Page do
       |> Keyword.get(:parser_opts, [])
       |> Keyword.put(:allow_redirect, allow_redirect)
 
-    with {:ok, url} <- build_url(id_key, id, language),
+    with {:ok, url} <- url(id_key, id, language),
          {:ok, raw_response} <- http_client.get(url, http_headers, http_opts),
          :ok <- ok_http_status_code(raw_response, status_key),
          {:ok, body} <- get_body(raw_response, body_key),
@@ -141,16 +141,24 @@ defmodule ExWikipedia.Page do
     end
   end
 
-  def build_url(_id_key, id_value, _lang)
+  @doc """
+  Constructs and encodes a fully qualified Wikipedia URL using supplied args.
+  The `id_key` specifies what field will be used to query the `id_value` e.g.
+  `#{inspect(@allowed_id_keys)}`. The `id_value` is the actual query we are trying
+  to look up via the Wikipedia API. `lang` specifies the language of the Wikipedia
+  endpoint we will be searching.
+  """
+  @impl true
+  def url(_id_key, id_value, _lang)
       when not is_binary(id_value) and not is_integer(id_value) do
     {:error, "#{inspect(id_value)} is not supported type for lookup."}
   end
 
-  def build_url(id_key, _, _) when id_key not in @allowed_id_keys do
+  def url(id_key, _, _) when id_key not in @allowed_id_keys do
     {:error, "Unsupported :by field #{inspect(id_key)}"}
   end
 
-  def build_url(id_key, id_value, lang)
+  def url(id_key, id_value, lang)
       when (id_key in @allowed_id_keys and is_binary(lang)) or is_atom(lang) do
     {
       :ok,
@@ -166,7 +174,7 @@ defmodule ExWikipedia.Page do
     }
   end
 
-  def build_url(_id_key, _, lang) do
+  def url(_id_key, _, lang) do
     {:error, "Unsupported language identifier #{inspect(lang)}; language codes must be a string."}
   end
 

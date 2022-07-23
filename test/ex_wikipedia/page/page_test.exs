@@ -103,23 +103,23 @@ defmodule ExWikipedia.Page.PageTest do
     end
   end
 
-  describe "build_url/3" do
+  describe "url/3" do
     test "properly encodes url" do
       assert {:ok,
               "https://en.wikipedia.org/w/api.php?action=parse&page=Seehund%2C+Puma+%26+Co.&format=json&redirects=true&prop=text%7Clanglinks%7Ccategories%7Clinks%7Ctemplates%7Cimages%7Cexternallinks%7Csections%7Crevid%7Cdisplaytitle%7Ciwlinks%7Cproperties%7Cparsewarnings%7Cheadhtml"} =
-               Page.build_url(:page, "Seehund, Puma & Co.", "en")
+               Page.url(:page, "Seehund, Puma & Co.", "en")
     end
 
     test ":error when unsupported key is supplied" do
-      assert {:error, _} = Page.build_url(:invalid, 123, "en")
+      assert {:error, _} = Page.url(:invalid, 123, "en")
     end
 
     test ":error when invalid id_value is supplied" do
-      assert {:error, _} = Page.build_url(:page, [], "en")
+      assert {:error, _} = Page.url(:page, [], "en")
     end
 
     test ":error when invalid language is supplied" do
-      assert {:error, _} = Page.build_url(:page, 12_345, 123)
+      assert {:error, _} = Page.url(:page, 12_345, 123)
     end
   end
 end
