@@ -148,6 +148,7 @@ defmodule ExWikipedia.Page do
   to look up via the Wikipedia API. `lang` specifies the language of the Wikipedia
   endpoint we will be searching.
   """
+  @doc since: "0.4.0"
   @impl true
   def url(id_key, id_value, lang)
       when id_key in @allowed_id_keys and (is_binary(id_value) or is_integer(id_value)) and

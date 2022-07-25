@@ -6,6 +6,7 @@ defmodule ExWikipedia do
 
   @callback fetch(input :: integer(), opts :: keyword()) :: {:ok, map()} | {:error, any()}
 
+  @doc since: "0.4.0"
   @callback url(key :: atom(), value :: String.t(), lang :: String.t() | atom()) ::
               {:ok, String.t()} | {:error, String.t()}
 
