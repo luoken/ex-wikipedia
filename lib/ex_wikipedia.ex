@@ -6,6 +6,9 @@ defmodule ExWikipedia do
 
   @callback fetch(input :: integer(), opts :: keyword()) :: {:ok, map()} | {:error, any()}
 
+  @callback url(key :: atom(), value :: String.t(), lang :: String.t() | atom()) ::
+              {:ok, String.t()} | {:error, String.t()}
+
   @doc """
   Accepts an integer (or a binary representation) and returns a struct with key information extracted.
 
