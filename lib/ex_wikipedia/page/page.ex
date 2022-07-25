@@ -142,24 +142,16 @@ defmodule ExWikipedia.Page do
   end
 
   @doc """
-  Constructs and encodes a fully qualified Wikipedia URL using supplied args.
+  Constructs a fully qualified Wikipedia URL using supplied args.
   The `id_key` specifies what field will be used to query the `id_value` e.g.
   `#{inspect(@allowed_id_keys)}`. The `id_value` is the actual query we are trying
   to look up via the Wikipedia API. `lang` specifies the language of the Wikipedia
   endpoint we will be searching.
   """
   @impl true
-  def url(_id_key, id_value, _lang)
-      when not is_binary(id_value) and not is_integer(id_value) do
-    {:error, "#{inspect(id_value)} is not supported type for lookup."}
-  end
-
-  def url(id_key, _, _) when id_key not in @allowed_id_keys do
-    {:error, "Unsupported :by field #{inspect(id_key)}"}
-  end
-
   def url(id_key, id_value, lang)
-      when (id_key in @allowed_id_keys and is_binary(lang)) or is_atom(lang) do
+      when id_key in @allowed_id_keys and (is_binary(id_value) or is_integer(id_value)) and
+             (is_binary(lang) or is_atom(lang)) do
     {
       :ok,
       "https://#{lang}.wikipedia.org/w/api.php?" <>
@@ -174,8 +166,8 @@ defmodule ExWikipedia.Page do
     }
   end
 
-  def url(_id_key, _, lang) do
-    {:error, "Unsupported language identifier #{inspect(lang)}; language codes must be a string."}
+  def url(_, _, _) do
+    {:error, "Unsupported arguments"}
   end
 
   defp detect_id_type(id) when is_integer(id), do: :pageid
